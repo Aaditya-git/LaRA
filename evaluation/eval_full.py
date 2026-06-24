@@ -55,14 +55,20 @@ def call_qwen(
 
 def call_gpt(model, messages, retry_num=5, retry_interval=5):
     client = OpenAI(
-        api_key=api_key,
-        organization=org_id,
+        api_key=os.environ.get("OPENAI_API_KEY", api_key),
+        base_url=os.environ.get("OPENAI_BASE_URL") or None,
+        organization=org_id or None,
     )
+    extra = {}
+    if os.environ.get("OLLAMA_NUM_CTX"):
+        # Ollama defaults to a small context window; raise it so long prompts aren't truncated.
+        extra["extra_body"] = {"options": {"num_ctx": int(os.environ["OLLAMA_NUM_CTX"])}}
     for _ in range(retry_num):
         try:
             completion = client.chat.completions.create(
                 model=model,
                 messages=messages,
+                **extra,
             )
             text = completion.choices[0].message.content
             if isinstance(text, str) and text:
