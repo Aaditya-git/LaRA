@@ -34,6 +34,12 @@ context_length = args.context_length
 api_key = ""
 org_id = ""
 
+# Retrieval models for the RAG path. The original paper used local GTE models that
+# are not shipped in this repo; default to small BGE models that auto-download from
+# HuggingFace and run on CPU. Override via env if you have the originals.
+EMBED_MODEL = os.environ.get("LARA_EMBED_MODEL", "BAAI/bge-small-en-v1.5")
+RERANK_MODEL = os.environ.get("LARA_RERANK_MODEL", "BAAI/bge-reranker-base")
+
 def call_qwen(
     model,
     messages,
@@ -95,7 +101,7 @@ def process_example(eg):
         separator=' ',       
         paragraph_separator='\n\n\n', secondary_chunking_regex='[^,.;。？！]+[,.;。？！]?')
     transformations.append(splitter)
-    embed_model = HuggingFaceEmbedding(model_name="../embedding_models/gte-enzh-emb-large-v1.5")
+    embed_model = HuggingFaceEmbedding(model_name=EMBED_MODEL)
     transformations.append(embed_model)
     pipeline = IngestionPipeline(
         transformations=transformations
@@ -112,8 +118,8 @@ def process_example(eg):
         "thread_num": 1,
         "rerank_size": 5,
         "vector_ratio": 0.5,
-        "embed_model_name": "../embedding_models/gte-enzh-emb-large-v1.5",
-        "rerank_model": "../embedding_models/gte-rerank-large-v1.5"
+        "embed_model_name": EMBED_MODEL,
+        "rerank_model": RERANK_MODEL
     }
 
     searcher = SimpleHybridSearcher(config, nodes)
