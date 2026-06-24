@@ -107,7 +107,10 @@ if __name__ == "__main__":
 
     data_path = f'../datasets/query/{context_length}_{context_type}_{query_type}.jsonl'
     examples = load_data(data_path)
+    if os.environ.get("LARA_LIMIT"):
+        examples = examples[:int(os.environ["LARA_LIMIT"])]
     output_path = f'./prediction/{eval_model}/full_preds_{eval_model}_{context_length}_{context_type}_{query_type}.jsonl'
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     tokenizer = tiktoken.encoding_for_model("gpt-4")
     preds = []
 
