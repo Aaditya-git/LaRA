@@ -90,9 +90,11 @@ def process_example(eg):
     )
     # Make prediction
     try:
-        if 'qwen' in eval_model:
+        if 'qwen' in eval_model and not os.environ.get("OPENAI_BASE_URL"):
+            # native DashScope path (only when not pointed at an OpenAI-compatible endpoint)
             response = call_qwen(eval_model, msgs)
-        if 'gpt' in eval_model:
+        else:
+            # gpt, local Ollama, or any OpenAI-compatible endpoint (incl. qwen via Ollama)
             response = call_gpt(eval_model, msgs)
 
         return response, eg
