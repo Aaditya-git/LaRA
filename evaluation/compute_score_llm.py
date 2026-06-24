@@ -141,6 +141,10 @@ for rag_or_full in ['rag', 'full']:
                   
                 data_path = f'./prediction/{eval_model}/{rag_or_full}_preds_{eval_model}_{context_length}_{context_type}_{query_type}.jsonl'
 
+                if not os.path.exists(data_path):
+                    print(f"skip (no predictions): {data_path}")
+                    continue
+
                 score_all = 0.0
                 cnt_all = 0
                 score_location = {}
@@ -163,7 +167,7 @@ for rag_or_full in ['rag', 'full']:
                                     cnt_location[sample['context_order']] = 1                         
                 score_all_avg = score_all / cnt_all
                 with open(save_all_path, 'a') as f:
-                    f.write(f'{rag_or_full}_{eval_model}_{context_length}_{context_type}_{query_type}: {score_all_avg}, \cnt:{cnt_all}\n')
+                    f.write(f'{rag_or_full}_{eval_model}_{context_length}_{context_type}_{query_type}: {score_all_avg}, cnt:{cnt_all}\n')
                 if query_type in ['location', 'reasoning']:
                     with open(save_order_path, 'a') as f:
                         for loc in score_location:
@@ -186,10 +190,12 @@ with open(output_csv, 'w', newline='', encoding='utf-8') as csvfile:
 
     for line in lines:
         line = line.strip()
-        parts = line.split(':')
-        task_name = parts[0].strip()
-        accuracy_info = parts[1].split(',')[0].strip()
-        accuracy = float(accuracy_info)
+        if not line:
+            continue
+        # split on the first ': ' only, so a colon inside the model name
+        # (e.g. qwen2.5:7b) does not break parsing
+        task_name, rest = line.split(': ', 1)
+        accuracy = float(rest.split(',')[0].strip())
         csvwriter.writerow([task_name, accuracy])
 
 df = pd.read_csv(output_csv)
@@ -201,7 +207,9 @@ for sub_task in sub_tasks:
         for rf in ['full', 'rag']:
             filtered_df = df[df['Task Name'].str.contains(f"{rf}_") & df['Task Name'].str.contains(sub_task)
             & df['Task Name'].str.contains(length)]
-            avg_score = round(filtered_df['Accuracy'].mean().item() * 100, 2)
+            mean_val = filtered_df['Accuracy'].mean()
+            # mean() of an empty selection is NaN (a plain float); treat missing configs as 0.0
+            avg_score = round(float(mean_val) * 100, 2) if pd.notna(mean_val) else 0.0
             results[rf+length][sub_task] = avg_score
 
 results['rag32k']['overall'] = round((results['rag32k']['location'] + results['rag32k']['reasoning'] + results['rag32k']['comp'] + results['rag32k']['hallu']) / 4, 2)
