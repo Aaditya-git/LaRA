@@ -13,6 +13,8 @@ import os
 import concurrent.futures
 import csv
 import dashscope
+import pandas as pd
+from openai import OpenAI
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--eval_model', default='qwen2.5-7b-instruct', type=str, help='')
@@ -48,8 +50,9 @@ def call_qwen(
 
 def call_gpt(model, messages, retry_num=5, retry_interval=5):
     client = OpenAI(
-        api_key=api_key,
-        organization=org_id,
+        api_key=os.environ.get("OPENAI_API_KEY", api_key),
+        base_url=os.environ.get("OPENAI_BASE_URL") or None,
+        organization=org_id or None,
     )
     for _ in range(retry_num):
         try:
