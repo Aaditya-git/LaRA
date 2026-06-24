@@ -134,9 +134,11 @@ def process_example(eg):
     )
     # Make prediction
     try:
-        if 'qwen' in eval_model:
+        if 'qwen' in eval_model and not os.environ.get("OPENAI_BASE_URL"):
+            # native DashScope path (only when not pointed at an OpenAI-compatible endpoint)
             response = call_qwen(eval_model, msgs)
-        if 'gpt' in eval_model:
+        else:
+            # gpt, local Ollama, or any OpenAI-compatible endpoint (incl. qwen via Ollama)
             response = call_gpt(eval_model, msgs)
 
         return response, eg
@@ -150,7 +152,10 @@ if __name__ == "__main__":
 
     data_path = f'../datasets/query/{context_length}_{context_type}_{query_type}.jsonl'
     examples = load_data(data_path)
+    if os.environ.get("LARA_LIMIT"):
+        examples = examples[:int(os.environ["LARA_LIMIT"])]
     output_path = f'./prediction/{eval_model}/rag_preds_{eval_model}_{context_length}_{context_type}_{query_type}.jsonl'
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     tokenizer = tiktoken.encoding_for_model("gpt-4")
 
@@ -163,7 +168,9 @@ if __name__ == "__main__":
     print("===================================================")
     print(f"currently processing rag_{context_length}_{context_type}_{query_type} ")
 
-    if 'qwen' in eval_model:
+    if os.environ.get("LARA_WORKERS"):
+        max_workers = int(os.environ["LARA_WORKERS"])
+    elif 'qwen' in eval_model:
         max_workers = 8
     else:
         max_workers = 4
