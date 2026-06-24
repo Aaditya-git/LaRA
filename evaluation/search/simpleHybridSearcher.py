@@ -94,11 +94,14 @@ class SimpleHybridSearcher(BaseSearcher):
         return query_engine
 
     def load_node_postprocessors(self):
-        from llama_index.postprocessor.flag_embedding_reranker import FlagEmbeddingReranker
-        reranker = FlagEmbeddingReranker(
+        # NOTE: originally used FlagEmbeddingReranker, but FlagEmbedding 1.4.0 is
+        # incompatible with current transformers tokenizers (XLMRobertaTokenizer has
+        # no attribute 'prepare_for_model') and hangs in an infinite retry loop.
+        # SentenceTransformerRerank loads the same BGE reranker via sentence-transformers.
+        from llama_index.core.postprocessor import SentenceTransformerRerank
+        reranker = SentenceTransformerRerank(
                     top_n=self.rerank_size,
                     model=self.rerank_model,
-                    use_fp16=False
         )
         if self.recursive_rerank:
             return [reranker, Small2big(all_nodes_dict=self.all_nodes_dict)]
