@@ -17,6 +17,7 @@ from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from search.simpleHybridSearcher import SimpleHybridSearcher
+from model_cache import get_embed_model
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -101,7 +102,7 @@ def process_example(eg):
         separator=' ',       
         paragraph_separator='\n\n\n', secondary_chunking_regex='[^,.;。？！]+[,.;。？！]?')
     transformations.append(splitter)
-    embed_model = HuggingFaceEmbedding(model_name=EMBED_MODEL)
+    embed_model = get_embed_model(EMBED_MODEL)
     transformations.append(embed_model)
     pipeline = IngestionPipeline(
         transformations=transformations

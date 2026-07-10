@@ -12,6 +12,7 @@ models/
 evaluation/prediction/llama3.2/
 evaluation/prediction/qwen2.5*/
 evaluation/prediction/result/
+evaluation/logs/
 
 # OS
 .DS_Store

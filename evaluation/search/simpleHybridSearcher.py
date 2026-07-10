@@ -98,11 +98,8 @@ class SimpleHybridSearcher(BaseSearcher):
         # incompatible with current transformers tokenizers (XLMRobertaTokenizer has
         # no attribute 'prepare_for_model') and hangs in an infinite retry loop.
         # SentenceTransformerRerank loads the same BGE reranker via sentence-transformers.
-        from llama_index.core.postprocessor import SentenceTransformerRerank
-        reranker = SentenceTransformerRerank(
-                    top_n=self.rerank_size,
-                    model=self.rerank_model,
-        )
+        from model_cache import get_reranker
+        reranker = get_reranker(self.rerank_model, self.rerank_size)
         if self.recursive_rerank:
             return [reranker, Small2big(all_nodes_dict=self.all_nodes_dict)]
         elif self.enable_auto_merge:
@@ -111,8 +108,8 @@ class SimpleHybridSearcher(BaseSearcher):
             return [reranker]
 
     def load_retriever(self, nodes):
-        from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-        embed_model = HuggingFaceEmbedding(model_name=self.embed_model_name, embed_batch_size=10, max_length=512)
+        from model_cache import get_embed_model
+        embed_model = get_embed_model(self.embed_model_name, embed_batch_size=10, max_length=512)
         if self.regenerate_emb:
             print('Regenerating embeddings')
             new_nodes = []

@@ -17,11 +17,70 @@ import pandas as pd
 from openai import OpenAI
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('--eval_model', default='qwen2.5-7b-instruct', type=str, help='')
+parser.add_argument('--eval_model', default='qwen2.5-7b-instruct', type=str, help='which model generated the predictions to read')
+parser.add_argument('--judge_model', default=None, type=str, help='model that does the grading; defaults to --eval_model')
 
 args = parser.parse_args()
 
 eval_model = args.eval_model
+judge_model = args.judge_model or eval_model
+
+# distinct result-file tag per (generator, judge) cell so the 4 runs don't overwrite each other
+_safe_eval = eval_model.replace(':', '-').replace('/', '-')
+_safe_judge = judge_model.replace(':', '-').replace('/', '-')
+CELL = f'gen-{_safe_eval}_judge-{_safe_judge}'
+
+import threading
+
+# --- Debug / visibility knobs -------------------------------------------------
+# LARA_JUDGE_DEBUG=1 : print each judge decision (question / expected / got /
+#                      judge's raw reply / verdict) and append it to a jsonl file.
+# LARA_WORKERS=N     : judge calls in parallel (default 4). Use 1 for clean,
+#                      non-interleaved debug output.
+DEBUG = os.environ.get("LARA_JUDGE_DEBUG") == "1"
+MAX_WORKERS = int(os.environ.get("LARA_WORKERS", "4"))
+DEBUG_LOG_PATH = f'./prediction/result/judge_debug_{CELL}.jsonl'
+_debug_lock = threading.Lock()
+
+# running totals across every task, printed as a grand total at the end
+grand_true = 0
+grand_false = 0
+grand_err = 0
+
+def _short(text, limit=500):
+    text = str(text).replace("\n", " ").strip()
+    return text if len(text) <= limit else text[:limit] + " ...[truncated]"
+
+def log_judgement(tag, sample, score, judge_raw):
+    if score is False:
+        verdict = "ERROR (judge call failed)"
+    elif score == 1.0:
+        verdict = "1.0 (True)"
+    else:
+        verdict = "0.0 (False)"
+    block = (
+        "\n" + "-" * 70 + "\n"
+        + f"[{tag}]\n"
+        + f"QUESTION:   {_short(sample.get('question', ''), 300)}\n"
+        + f"EXPECTED:   {_short(sample.get('ground_truth', ''))}\n"
+        + f"GOT:        {_short(sample.get('prediction', ''))}\n"
+        + f"JUDGE SAID: {_short(judge_raw, 300)}\n"
+        + f"VERDICT:    {verdict}\n"
+        + "-" * 70
+    )
+    record = {
+        "tag": tag,
+        "question": sample.get("question", ""),
+        "expected": sample.get("ground_truth", ""),
+        "got": sample.get("prediction", ""),
+        "judge_raw": judge_raw,
+        "verdict": verdict,
+    }
+    with _debug_lock:
+        print(block)
+        os.makedirs(os.path.dirname(DEBUG_LOG_PATH), exist_ok=True)
+        with open(DEBUG_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 api_key = ""
 org_id = ""
@@ -99,37 +158,41 @@ Now, start your judgment:'''
     for _ in range(20):
         try:
             # response = call_qwen(model=model, messages=msg)
-            response = call_gpt(eval_model, msg)
+            response = call_gpt(judge_model, msg)
             if not response:
-                return False
+                return False, ""
             else:
                 if 'true' in response.lower():
-                    return 1.0
+                    return 1.0, response
                 else:
-                    return 0.0
+                    return 0.0, response
         except:
             time.sleep(5)
+    return False, ""
 
 def process_example(sample, query_type):
     pred = sample['prediction']
     query = sample['question']
     label = sample['ground_truth']
-    score = get_score_one_llm(pred=pred, label=label, query=query, query_type=query_type)
-    return score, sample     
+    score, judge_raw = get_score_one_llm(pred=pred, label=label, query=query, query_type=query_type)
+    return score, judge_raw, sample     
 
 query_type_list = ['location', 'reasoning', 'comp', 'hallu']
 context_type_list = ['book', 'financial', 'paper']
 length_list = ['32k', '128k']
 
-save_all_path = f'./prediction/result/{eval_model}_all.jsonl'
-save_order_path = f'./prediction/result/{eval_model}_order.jsonl'
+save_all_path = f'./prediction/result/{CELL}_all.jsonl'
+save_order_path = f'./prediction/result/{CELL}_order.jsonl'
 
 for rag_or_full in ['rag', 'full']:
     for context_length in length_list:
         for query_type in query_type_list:
             for context_type in context_type_list:      
-                print("\n============================================================")
                 check = f'{rag_or_full}_{eval_model}_{context_length}_{context_type}_{query_type}'
+                data_path = f'./prediction/{eval_model}/{rag_or_full}_preds_{eval_model}_{context_length}_{context_type}_{query_type}.jsonl'
+                if not os.path.exists(data_path):
+                    continue  # no predictions generated for this config; skip silently
+                print("\n============================================================")
                 if os.path.exists(save_all_path):
                     with open(save_all_path, 'r') as f:
                         check_str = f.read()
@@ -151,10 +214,12 @@ for rag_or_full in ['rag', 'full']:
                 cnt_location = {}
 
                 data = load_data(data_path)
-                with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
                     futures = [executor.submit(process_example, sample, query_type) for sample in data]
                     for future in futures:
-                        score, sample = future.result()
+                        score, judge_raw, sample = future.result()
+                        if DEBUG:
+                            log_judgement(check, sample, score, judge_raw)
                         if score is not False:
                             score_all += score
                             cnt_all += 1
@@ -165,7 +230,14 @@ for rag_or_full in ['rag', 'full']:
                                 else:
                                     score_location[sample['context_order']] = score
                                     cnt_location[sample['context_order']] = 1                         
-                score_all_avg = score_all / cnt_all
+                total_examples = len(data)
+                err_all = total_examples - cnt_all
+                n_true = int(round(score_all))
+                n_false = cnt_all - n_true
+                score_all_avg = (score_all / cnt_all) if cnt_all else 0.0
+                grand_true += n_true
+                grand_false += n_false
+                grand_err += err_all
                 with open(save_all_path, 'a') as f:
                     f.write(f'{rag_or_full}_{eval_model}_{context_length}_{context_type}_{query_type}: {score_all_avg}, cnt:{cnt_all}\n')
                 if query_type in ['location', 'reasoning']:
@@ -174,12 +246,23 @@ for rag_or_full in ['rag', 'full']:
                             acc = score_location[loc] / cnt_location[loc]
                             f.write(f'{rag_or_full}_{eval_model}_{context_length}_{context_type}_{query_type}:\n')
                             f.write(f'\tlocation {loc}: accuracy: {acc}, cnt: {cnt_location[loc]}\n')
-                print(f"score all: {score_all / cnt_all}")
+                print(f"[{check}]  TRUE: {n_true}/{cnt_all}   FALSE: {n_false}/{cnt_all}   ERRORS: {err_all}   ->  accuracy: {score_all_avg:.4f}")
+
+grand_total = grand_true + grand_false + grand_err
+print("\n" + "=" * 70)
+print(f"CELL: generator={eval_model}  judge={judge_model}")
+print(f"TOTAL JUDGED: {grand_total}")
+print(f"  TRUE:   {grand_true}")
+print(f"  FALSE:  {grand_false}")
+print(f"  ERRORS: {grand_err}")
+if DEBUG:
+    print(f"Per-question debug log: {DEBUG_LOG_PATH}")
+print("=" * 70 + "\n")
 
 # Save evaluation results into csv format
 
 input_file = save_all_path
-output_csv = f'./prediction/result/{eval_model}_all.csv'
+output_csv = f'./prediction/result/{CELL}_all.csv'
 
 with open(input_file, 'r', encoding='utf-8') as f:
     lines = f.readlines()
