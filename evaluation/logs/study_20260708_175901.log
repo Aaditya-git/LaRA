@@ -1,0 +1,421 @@
+Transcript: /Users/Aaditya/Documents/Ideas/LaRA/evaluation/logs/study_20260708_175901.log
+WEAK=qwen2.5:7b  STRONG=qwen2.5:14b  LIMIT=10  mode=rag doc=book len=32k
+
+[1m==== CHECKS ====[0m
+OK: both models present.
+
+[1m==== CLEAN ====[0m
+cleared old predictions + study results.
+
+[1m==== GENERATE with qwen2.5:7b  (rag/book/32k, N=10) ====[0m
+  --- qwen2.5:7b / location ---
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+===================================================
+currently processing rag_32k_book_location 
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3553.06it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 3674.23it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3224.34it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A
+
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A[ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 2803.80it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2538.68it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3191.71it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2843.31it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 8983.80it/s]
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 4070.29it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 4167.00it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3855.31it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 201/201 [00:00<00:00, 4962.83it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 4469.76it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 5577.94it/s]
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 12312.71it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 15632.51it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 14010.11it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 16556.90it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 12764.83it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 6571.79it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A[A
+
+
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A[A[ALoading weights: 100%|██████████| 201/201 [00:00<00:00, 3471.28it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 2404.89it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 2791.56it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 3370.55it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 7167.53it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 12046.51it/s]
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3575.61it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 12064.44it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 6681.26it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 20513.79it/s]
+  --- qwen2.5:7b / reasoning ---
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+===================================================
+currently processing rag_32k_book_reasoning 
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A
+
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A[A
+
+
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A[A[A
+
+
+
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A[A[A[ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 2317.94it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2323.46it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2422.96it/s]
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 2811.33it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2465.12it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2557.78it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3225.33it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 4736.05it/s]
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 9367.33it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 5431.37it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 6116.70it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 18376.22it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A[ALoading weights: 100%|██████████| 201/201 [00:00<00:00, 3459.43it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 3474.87it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 3650.38it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 6761.81it/s]
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 14098.86it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 14468.38it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 9967.48it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 16994.13it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A[A
+
+
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A[A[ALoading weights:  37%|███▋      | 75/201 [00:00<00:00, 740.26it/s]
+Loading weights:  43%|████▎     | 87/201 [00:00<00:00, 867.25it/s][A
+
+Loading weights:  48%|████▊     | 97/201 [00:00<00:00, 967.69it/s][A[A
+
+
+Loading weights:  52%|█████▏    | 105/201 [00:00<00:00, 1048.58it/s][A[A[ALoading weights: 100%|██████████| 201/201 [00:00<00:00, 1397.58it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 1429.02it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 1272.17it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 1769.80it/s]
+Python(23514) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23515) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23516) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23517) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23518) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23519) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23520) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23521) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 5966.12it/s]
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 6931.41it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 15846.49it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights:  37%|███▋      | 75/201 [00:00<00:00, 742.04it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 1308.27it/s]
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 8047.54it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 5596.71it/s]
+  --- qwen2.5:7b / comp ---
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+===================================================
+currently processing rag_32k_book_comp 
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A
+
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A[A
+
+
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A[A[A
+
+
+
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A[A[A[A
+
+
+
+
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A[A[A[A[A
+
+
+
+
+
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A[A[A[A[A[ALoading weights:  84%|████████▍ | 167/199 [00:00<00:00, 1645.97it/s]
+Loading weights:  63%|██████▎   | 126/199 [00:00<00:00, 1256.32it/s][ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 1672.24it/s]
+
+
+Loading weights:  91%|█████████ | 181/199 [00:00<00:00, 1806.22it/s][A[ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 1893.41it/s]
+
+
+
+Loading weights:  99%|█████████▉| 198/199 [00:00<00:00, 1979.13it/s][A[A[ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 1975.52it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2107.00it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2004.35it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 1486.39it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2206.33it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2664.99it/s]
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 6838.95it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 11027.87it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 16050.04it/s]
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 14768.15it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 10193.03it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 201/201 [00:00<00:00, 5184.71it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 4780.47it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 6933.65it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 201/201 [00:00<00:00, 7427.86it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 6032.42it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[ALoading weights:  72%|███████▏  | 144/199 [00:00<00:00, 1423.94it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 1707.18it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2862.53it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 4846.23it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A[ALoading weights: 100%|██████████| 201/201 [00:00<00:00, 3700.71it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 3132.26it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 4193.09it/s]
+./run_study.sh: line 53: 23708 Segmentation fault: 11  "$PY" "eval_${MODE}.py" --eval_model "$GEN" --context_length "$LEN" --context_type "$CTX" --query_type "$q"
+  WARN: generation failed for qwen2.5:7b/comp
+  --- qwen2.5:7b / hallu ---
+/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/multiprocessing/resource_tracker.py:475: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/loky-23708-bp1e4sn7'}
+  warnings.warn(
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+===================================================
+currently processing rag_32k_book_hallu 
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2706.16it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A
+
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A[ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 3048.50it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3036.35it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3019.50it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2978.24it/s]
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 2934.99it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3436.95it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3240.29it/s]
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 6472.24it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 13645.92it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 6463.82it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 7939.00it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 201/201 [00:00<00:00, 4674.45it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 5497.37it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 6693.30it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 16521.75it/s]
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 6044.02it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 7340.76it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 5586.15it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 7591.67it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A[ALoading weights: 100%|██████████| 201/201 [00:00<00:00, 3263.19it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 3453.91it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 4678.99it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 14366.01it/s]
+Python(23894) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23895) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23896) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23897) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23898) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23899) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23900) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(23901) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2702.85it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3298.86it/s]
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 6398.95it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 9773.50it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][ALoading weights: 100%|██████████| 201/201 [00:00<00:00, 5064.61it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 6909.44it/s]
+
+[1m==== GENERATE with qwen2.5:14b  (rag/book/32k, N=10) ====[0m
+  --- qwen2.5:14b / location ---
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+===================================================
+currently processing rag_32k_book_location 
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 4436.93it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A
+
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A[A
+
+
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A[A[A
+
+
+
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[A[A[A[ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 2380.92it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2267.01it/s]
+
+
+Loading weights:  93%|█████████▎| 186/199 [00:00<00:00, 1851.17it/s][A[ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 2176.58it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 1925.29it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2462.32it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2060.96it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3360.59it/s]
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 7307.60it/s]
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 12288.42it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 9650.77it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 3806.75it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 11713.98it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 15306.01it/s]
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+LLM is explicitly disabled. Using MockLLM.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2684.73it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 12603.69it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s][A[ALoading weights: 100%|██████████| 199/199 [00:00<00:00, 3513.29it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 3911.24it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 4882.98it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Generating embeddings: 0it [00:00, ?it/s]Generating embeddings: 0it [00:00, ?it/s]
+Python(24292) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(24293) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(24294) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(24295) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(24296) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Python(24297) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 3837.20it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 7559.81it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A
+
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s][A[ALoading weights: 100%|██████████| 201/201 [00:00<00:00, 2646.62it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 3515.59it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 4659.23it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights:  41%|████      | 82/199 [00:00<00:00, 813.23it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 1094.84it/s]
