@@ -1,7 +1,8 @@
 # LaRA x ChunkResearch: pluggable Chonkie chunkers (scope + handoff)
 
-Status: SCOPED, not yet implemented. Decision made to keep everything inside the LaRA repo.
-Last working session ended here. Pick up from "Next step" at the bottom.
+Status: IMPLEMENTED (2026-08-05). See RESUME.md section "Chonkie chunker study" for what
+was actually built, the results, and next steps. This file is kept for the original
+design rationale (still accurate) but the "Next step" at the bottom is done.
 
 ## The goal in one sentence
 
