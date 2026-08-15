@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LaRA x Chonkie chunker study</title>
+<style>
+  @page { size: 13.333in 7.5in; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --surface:#fcfcfb; --plane:#ffffff; --ink:#0b0b0b; --ink2:#52514e;
+    --muted:#898781; --grid:#e1e0d9; --baseline:#c3c2b7;
+    --blue:#2a78d6; --blue-dark:#184f95; --good:#006300; --critical:#d03b3b;
+    --orange:#eb6834; --orange-dark:#a8461c;
+    --seq0:#eaf3fd; --seq2:#9ec5f4; --seq3:#6da7ec;
+    --border:rgba(11,11,11,0.10);
+  }
+  html,body{ font-family:system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink);
+    -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .slide{ position:relative; width:1280px; height:720px; background:var(--plane);
+    padding:70px 84px; display:flex; flex-direction:column; page-break-after:always; overflow:hidden; }
+  .slide:last-child{ page-break-after:auto; }
+
+  .kicker{ font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:var(--blue); margin-bottom:20px; }
+  .stitle{ font-size:36px; font-weight:700; letter-spacing:-.015em; line-height:1.1; }
+  .pnum{ position:absolute; right:40px; bottom:28px; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .brand{ position:absolute; left:84px; bottom:28px; font-size:12px; color:var(--muted); letter-spacing:.02em; }
+  .fill-mid{ flex:1; display:flex; flex-direction:column; justify-content:center; min-height:0; }
+  .fill-top{ flex:1; display:flex; flex-direction:column; justify-content:flex-start; min-height:0; margin-top:6px; }
+
+  /* title slide */
+  .title-slide{ justify-content:center; }
+  .title-slide h1{ font-size:54px; font-weight:700; letter-spacing:-.02em; line-height:1.08; max-width:1050px; }
+  .title-slide .lede{ font-size:21px; color:var(--ink2); margin-top:22px; line-height:1.4; max-width:920px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:10px; margin-top:44px; }
+  .chip{ font-size:13px; color:var(--ink2); background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:7px 15px; }
+  .byline{ margin-top:30px; font-size:14px; color:var(--muted); }
+
+  /* big statement */
+  .big{ font-size:44px; font-weight:700; letter-spacing:-.02em; line-height:1.15; }
+  .big .g{ color:var(--good); } .big .r{ color:var(--critical); } .big .o{ color:var(--orange-dark); }
+  .para{ font-size:19px; color:var(--ink2); line-height:1.5; max-width:1000px; margin-top:20px; }
+  .para b{ color:var(--ink); }
+  .para.tight{ margin-top:12px; }
+  .qbox{ margin-top:26px; padding:18px 24px; background:#f2f7fc; border-left:5px solid var(--blue); border-radius:0 10px 10px 0;
+    font-size:20px; font-weight:600; color:var(--blue-dark); max-width:1000px; line-height:1.35; }
+  .quote{ margin-top:8px; padding:22px 26px; background:var(--surface); border:1px solid var(--border); border-left:5px solid var(--muted); border-radius:0 10px 10px 0;
+    font-size:17px; color:var(--ink2); line-height:1.55; max-width:1040px; font-style:italic; }
+
+  /* pipeline diagram (flexbox only, no grid) */
+  .pipeline{ display:flex; align-items:center; flex-wrap:wrap; gap:0; margin-top:10px; }
+  .pnode{ background:var(--surface); border:1.5px solid var(--baseline); border-radius:12px; padding:16px 18px; min-width:132px; text-align:center; }
+  .pnode .t{ font-size:14.5px; font-weight:700; color:var(--ink); line-height:1.3; }
+  .pnode .s{ font-size:12px; color:var(--muted); margin-top:5px; line-height:1.3; }
+  .pnode.hl{ border-color:var(--blue); background:#eaf3fd; }
+  .pnode.hl .t{ color:var(--blue-dark); }
+  .parrow{ font-size:22px; color:var(--muted); padding:0 10px; }
+  .pnote{ font-size:14px; color:var(--muted); margin-top:10px; }
+
+  /* strategy cards row (flexbox, not grid) */
+  .cardrow{ display:flex; gap:16px; margin-top:14px; }
+  .scard{ flex:1; background:var(--surface); border:1.5px solid var(--baseline); border-radius:14px; padding:18px 16px; min-height:210px; }
+  .scard .n{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--blue); }
+  .scard h4{ font-size:18px; font-weight:700; color:var(--ink); margin-top:6px; }
+  .scard p{ font-size:13.5px; color:var(--ink2); line-height:1.42; margin-top:10px; }
+  .scard .cfg{ margin-top:12px; font-size:11.5px; color:var(--muted); font-family:"SF Mono",Consolas,monospace; background:#fff; border:1px solid var(--border); border-radius:6px; padding:6px 8px; }
+
+  /* code block */
+  .code{ background:#1c1c1a; border-radius:12px; padding:18px 22px; font-family:"SF Mono",Consolas,monospace; font-size:14px; line-height:1.55; color:#e7e6e2; overflow:hidden; white-space:pre-wrap; }
+  .code .c{ color:#8a897f; } .code .k{ color:#7cb7f5; } .code .s{ color:#e3b06a; } .code .fn{ color:#9fd88a; }
+  .codecap{ font-size:13px; color:var(--muted); margin-top:8px; }
+
+  /* file map table */
+  table{ border-collapse:collapse; font-size:15px; width:100%; }
+  th,td{ padding:9px 14px; text-align:left; vertical-align:top; }
+  th{ color:var(--muted); font-weight:600; border-bottom:1.5px solid var(--baseline); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  td{ border-top:1px solid var(--grid); font-size:14px; color:var(--ink2); }
+  td code{ font-family:"SF Mono",Consolas,monospace; font-size:12.5px; background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:2px 6px; color:var(--ink); }
+  td b{ color:var(--ink); }
+  .num-table td, .num-table th{ text-align:center; font-variant-numeric:tabular-nums; }
+  .num-table td:first-child, .num-table th:first-child{ text-align:left; }
+
+  /* grouped bar chart (2 series, flexbox) */
+  .chartwrap{ margin-top:8px; }
+  .legend{ display:flex; gap:22px; margin-bottom:16px; }
+  .lg{ display:flex; align-items:center; gap:8px; font-size:14px; color:var(--ink2); }
+  .lg .sw{ width:14px; height:14px; border-radius:4px; }
+  .bgrow{ display:flex; align-items:center; gap:16px; margin-bottom:13px; }
+  .bgrow .name{ width:96px; font-size:15px; font-weight:700; color:var(--ink); text-align:right; flex:none; }
+  .bgrow .bars{ flex:1; display:flex; flex-direction:column; gap:4px; }
+  .bgrow .btrack{ height:22px; background:var(--surface); border-radius:5px; position:relative; }
+  .bgrow .bfill{ height:100%; border-radius:5px; display:flex; align-items:center; }
+  .bgrow .bfill span{ font-size:12.5px; font-weight:700; color:#fff; padding-left:8px; font-variant-numeric:tabular-nums; }
+
+  /* takeaways */
+  .tk{ display:flex; flex-direction:column; gap:20px; margin-top:6px; max-width:1060px; }
+  .tk .item{ display:flex; gap:20px; align-items:flex-start; }
+  .tk .num{ flex:none; width:40px; height:40px; border-radius:50%; background:var(--blue); color:#fff; font-size:20px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .tk .txt{ font-size:18.5px; line-height:1.4; color:var(--ink); padding-top:4px; } .tk .txt b{ color:var(--blue-dark); }
+
+  /* two-column notes */
+  .cols{ display:flex; gap:56px; margin-top:6px; }
+  .cols > div{ flex:1; }
+  .cols h3{ font-size:16px; font-weight:700; color:var(--ink); margin-bottom:14px; }
+  .cols ul{ list-style:none; display:flex; flex-direction:column; gap:12px; }
+  .cols li{ font-size:14.5px; color:var(--ink2); line-height:1.42; padding-left:18px; position:relative; }
+  .cols li::before{ content:""; position:absolute; left:0; top:8px; width:6px; height:6px; border-radius:50%; background:var(--blue); }
+  .cols li b{ color:var(--ink); }
+
+  .exwrap{ display:flex; gap:28px; margin-top:10px; }
+  .exbox{ flex:1; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
+  .exbox h5{ font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700; margin-bottom:8px; }
+  .exbox p{ font-size:14.5px; color:var(--ink2); line-height:1.44; }
+  .verdictrow{ display:flex; gap:16px; margin-top:14px; }
+  .vpill{ flex:1; border-radius:10px; padding:12px 16px; text-align:center; }
+  .vpill .vv{ font-size:22px; font-weight:700; }
+  .vpill .vl{ font-size:12px; color:var(--ink2); margin-top:2px; }
+</style>
+</head>
+<body>
+
+<!-- 1. TITLE -->
+<section class="slide title-slide">
+  <div class="kicker">LaRA benchmark &middot; RAG chunking study</div>
+  <h1>Does chunking strategy change RAG accuracy?</h1>
+  <div class="lede">Swapping LaRA's chunking step for five <b>Chonkie</b> chunkers &mdash; token, sentence,
+    recursive, semantic, fast &mdash; while holding retrieval, generation, and judging fixed, then scoring on
+    both a binary and a 0&ndash;10 numeric scale.</div>
+  <div class="chips">
+    <span class="chip">RAG mode &middot; 32k context</span><span class="chip">5 chunkers</span>
+    <span class="chip">60 unique questions</span><span class="chip">qwen2.5:7b gen &middot; qwen2.5:14b judge</span>
+    <span class="chip">binary + numeric judging</span>
+  </div>
+  <div class="byline">Aaditya Bhilegaonkar &middot; 2026-08-05</div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div>
+</section>
+
+<!-- 2. THE ASK -->
+<section class="slide">
+  <div class="kicker">The ask</div>
+  <div class="stitle">This week's job, as given</div>
+  <div class="fill-mid">
+    <div class="quote">&ldquo;Build a LaRA evaluation pipeline that uses the Chonkie library directly for
+      chunking. That's it. Don't worry about integrating with Doug's MongoDB, Langfuse, or LangGraph
+      infrastructure. Define a single chunking function that accepts a document and a chunking algorithm as a
+      parameter&hellip; Token, Sentence, Recursive, Semantic, Fast. Flow: load LaRA document &rarr; chunk it
+      &rarr; embed and store &rarr; retrieve top-k &rarr; run LLM inference &rarr; score.&rdquo;</div>
+    <div class="para">Scope decision made with Aaditya before building: keep LaRA's own LLM-as-judge for
+      scoring (both binary and the numeric scale already built for the professor's other ask) instead of
+      semantic-similarity scoring, since the goal is to compare chunking strategies under LaRA's existing,
+      already-understood grading &mdash; not introduce a second new variable at the same time.</div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">2</div>
+</section>
+
+<!-- 3. BEFORE: existing pipeline -->
+<section class="slide">
+  <div class="kicker">Before &mdash; how LaRA's RAG path already worked</div>
+  <div class="stitle">One pipeline, six steps, already built</div>
+  <div class="fill-mid">
+    <div class="pipeline">
+      <div class="pnode"><div class="t">Load doc</div><div class="s">datasets/32k/&hellip;</div></div>
+      <div class="parrow">&rarr;</div>
+      <div class="pnode"><div class="t">Chunk</div><div class="s">llama-index<br>SentenceSplitter</div></div>
+      <div class="parrow">&rarr;</div>
+      <div class="pnode"><div class="t">Embed + index</div><div class="s">BGE small<br>+ BM25</div></div>
+      <div class="parrow">&rarr;</div>
+      <div class="pnode"><div class="t">Hybrid retrieve</div><div class="s">vector + BM25<br>fused, top-5</div></div>
+      <div class="parrow">&rarr;</div>
+      <div class="pnode"><div class="t">Rerank</div><div class="s">BGE<br>cross-encoder</div></div>
+      <div class="parrow">&rarr;</div>
+      <div class="pnode"><div class="t">LLM inference</div><div class="s">qwen2.5 via<br>Ollama</div></div>
+    </div>
+    <div class="para">Implemented in <code>evaluation/eval_rag.py</code> (chunking) and
+      <code>evaluation/search/simpleHybridSearcher.py</code> (embed + BM25 + fuse + rerank). This is real,
+      working infrastructure &mdash; not something built for this task. It was chunking with one fixed strategy
+      (llama-index's <code>SentenceSplitter</code>, 600-char chunks, 100-char overlap) with no way to swap it.</div>
+    <div class="qbox">The question: does the chunking step actually matter for RAG accuracy &mdash; and can we
+      swap it out to measure that?</div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">3</div>
+</section>
+
+<!-- 4. WHAT CHANGED -->
+<section class="slide">
+  <div class="kicker">What changed</div>
+  <div class="stitle">Exactly one seam, everything else untouched</div>
+  <div class="fill-mid">
+    <div class="pipeline">
+      <div class="pnode"><div class="t">Load doc</div><div class="s">unchanged</div></div>
+      <div class="parrow">&rarr;</div>
+      <div class="pnode hl"><div class="t">Chunk</div><div class="s"><b>Chonkie</b><br>5 swappable strategies</div></div>
+      <div class="parrow">&rarr;</div>
+      <div class="pnode"><div class="t">Embed + index</div><div class="s">unchanged</div></div>
+      <div class="parrow">&rarr;</div>
+      <div class="pnode"><div class="t">Hybrid retrieve</div><div class="s">unchanged</div></div>
+      <div class="parrow">&rarr;</div>
+      <div class="pnode"><div class="t">Rerank</div><div class="s">unchanged</div></div>
+      <div class="parrow">&rarr;</div>
+      <div class="pnode"><div class="t">LLM inference</div><div class="s">unchanged</div></div>
+    </div>
+    <div class="para">The hybrid searcher <b>re-embeds nodes itself</b> (<code>VectorStoreIndex(nodes,
+      embed_model=&hellip;)</code> in <code>simpleHybridSearcher.py</code>), so the new chunking adapter only
+      has to produce plain text nodes &mdash; it does not need to embed anything. That is why swapping the
+      chunker is a genuinely isolated change: BM25, vector fusion, reranking, and generation see the exact same
+      code path regardless of which chunker produced the nodes.</div>
+    <div class="para tight">Not done: no MongoDB, Langfuse, or LangGraph integration, per the brief. No new
+      vector DB &mdash; retrieval reuses LaRA's existing in-process hybrid index.</div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">4</div>
+</section>
+
+<!-- 5. THE 5 CHUNKERS -->
+<section class="slide">
+  <div class="kicker">The 5 chunking strategies</div>
+  <div class="stitle">What each one actually does</div>
+  <div class="fill-mid">
+    <div class="cardrow">
+      <div class="scard">
+        <div class="n">1 &middot; Token</div>
+        <h4>Token</h4>
+        <p>Splits on a fixed character/token count, no regard for sentence or paragraph boundaries. The
+          simplest possible baseline &mdash; closest in spirit to LaRA's original splitter.</p>
+        <div class="cfg">chunk_size=600, overlap=100</div>
+      </div>
+      <div class="scard">
+        <div class="n">2 &middot; Sentence</div>
+        <h4>Sentence</h4>
+        <p>Splits on sentence boundaries (<code>. ! ? \n</code>), then packs whole sentences into a chunk up to
+          the size cap. Never cuts a sentence in half.</p>
+        <div class="cfg">chunk_size=600, overlap=100</div>
+      </div>
+      <div class="scard">
+        <div class="n">3 &middot; Recursive</div>
+        <h4>Recursive</h4>
+        <p>Tries paragraph breaks first, then sentence punctuation, then clause punctuation, then whitespace
+          &mdash; falling back a level only when a piece is still too big. No overlap parameter.</p>
+        <div class="cfg">chunk_size=600</div>
+      </div>
+      <div class="scard">
+        <div class="n">4 &middot; Semantic</div>
+        <h4>Semantic</h4>
+        <p>Embeds sentences (model2vec <code>potion-base-32M</code>) and splits where topic similarity drops
+          &mdash; chunk boundaries follow meaning, not fixed size. No overlap parameter.</p>
+        <div class="cfg">chunk_size=600 (cap)</div>
+      </div>
+      <div class="scard">
+        <div class="n">5 &middot; Fast</div>
+        <h4>Fast</h4>
+        <p>Chonkie's speed-optimized splitter &mdash; simple delimiter search with no tokenizer call per
+          candidate boundary. Built for throughput over precision. No overlap parameter.</p>
+        <div class="cfg">chunk_size=600</div>
+      </div>
+    </div>
+    <div class="para">chunk_size held at 600 (characters) for all 5, matching LaRA's original splitter, so the
+      comparison isolates <b>strategy</b>, not chunk granularity. Recursive/Semantic/Fast not having an overlap
+      knob is a real property of those strategies in Chonkie, not an oversight in this implementation.</div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">5</div>
+</section>
+
+<!-- 6. FILE MAP -->
+<section class="slide">
+  <div class="kicker">Code &mdash; what changed, where</div>
+  <div class="stitle">Five files touched, one new module</div>
+  <div class="fill-top">
+    <table>
+      <thead><tr><th>File</th><th>Change</th></tr></thead>
+      <tbody>
+        <tr><td><code>evaluation/chunkers.py</code></td><td><b>New.</b> The adapter: <code>get_nodes(text, strategy)</code> builds the requested Chonkie chunker and wraps its output as llama-index <code>TextNode</code>s.</td></tr>
+        <tr><td><code>evaluation/eval_rag.py</code></td><td>Added <code>--chunker</code> flag; replaced the hardcoded <code>SentenceSplitter</code> + <code>IngestionPipeline</code> block with one call to <code>chunkers.get_nodes()</code>. Output filenames now carry the chunker name.</td></tr>
+        <tr><td><code>evaluation/compute_score_llm.py</code> (binary judge)</td><td>Added <code>--chunker</code>; when set, reads the chunker-tagged prediction files and skips full-context (chunking doesn't apply there).</td></tr>
+        <tr><td><code>evaluation/compute_score_numeric.py</code> (numeric judge)</td><td>Same <code>--chunker</code> threading, mirrors the binary judge's change.</td></tr>
+        <tr><td><code>evaluation/merge_judgments.py</code></td><td>Same <code>--chunker</code> threading, so the combined binary+numeric log is produced per chunker.</td></tr>
+        <tr><td><code>evaluation/run_chunker_study.sh</code></td><td><b>New.</b> Orchestrates the full sweep: generate &times; 5 chunkers &times; 3 doc types &times; 4 task types, then judge (both scales), then merge, then aggregate.</td></tr>
+        <tr><td><code>evaluation/aggregate_chunker_results.py</code></td><td><b>New.</b> Reads each chunker's binary + numeric result CSVs and builds the one final comparison table.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">6</div>
+</section>
+
+<!-- 7. CODE: chunkers.py -->
+<section class="slide">
+  <div class="kicker">Code &mdash; the adapter</div>
+  <div class="stitle"><code style="font-size:32px;background:none;border:none;padding:0;">chunkers.py</code> &mdash; the entire seam</div>
+  <div class="fill-mid">
+    <div class="code">def _build_chunker(strategy, chunk_size=600, chunk_overlap=100):
+    <span class="k">if</span> strategy == <span class="s">"token"</span>:     <span class="c"># fixed-size, no boundary awareness</span>
+        <span class="k">return</span> TokenChunker(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    <span class="k">if</span> strategy == <span class="s">"sentence"</span>:  <span class="c"># packs whole sentences to the size cap</span>
+        <span class="k">return</span> SentenceChunker(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    <span class="k">if</span> strategy == <span class="s">"recursive"</span>: <span class="c"># paragraph &rarr; sentence &rarr; clause &rarr; whitespace</span>
+        <span class="k">return</span> RecursiveChunker(chunk_size=chunk_size)
+    <span class="k">if</span> strategy == <span class="s">"semantic"</span>:  <span class="c"># splits where embedding similarity drops</span>
+        <span class="k">return</span> SemanticChunker(chunk_size=chunk_size)
+    <span class="k">if</span> strategy == <span class="s">"fast"</span>:      <span class="c"># delimiter search, no tokenizer per boundary</span>
+        <span class="k">return</span> FastChunker(chunk_size=chunk_size)
+
+<span class="fn">def get_nodes</span>(text, strategy, chunk_size=600, chunk_overlap=100):
+    chunker = _build_chunker(strategy, chunk_size, chunk_overlap)
+    chunks = chunker(text)                      <span class="c"># run the actual Chonkie chunker</span>
+    <span class="k">return</span> [TextNode(text=c.text) <span class="k">for</span> c <span class="k">in</span> chunks]  <span class="c"># -> LaRA's own node type</span></div>
+    <div class="codecap">One function, one signature, all 5 strategies swappable through the same call &mdash;
+      exactly as specified in the ask. Nodes carry only <code>.text</code>; embeddings are computed downstream
+      by the existing hybrid searcher.</div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">7</div>
+</section>
+
+<!-- 8. CODE: eval_rag.py wiring -->
+<section class="slide">
+  <div class="kicker">Code &mdash; wiring it into RAG</div>
+  <div class="stitle"><code style="font-size:32px;background:none;border:none;padding:0;">eval_rag.py</code> &mdash; the only lines that changed</div>
+  <div class="fill-mid">
+    <div class="code">parser.add_argument(<span class="s">'--chunker'</span>, default=<span class="s">'sentence'</span>, choices=chunkers.STRATEGIES)
+<span class="c">&hellip;</span>
+<span class="c"># was: SentenceSplitter(...) + IngestionPipeline(...).run(documents=[doc])</span>
+nodes = chunkers.get_nodes(eg_txt, chunker)      <span class="c"># <- the entire replacement</span>
+
+searcher = SimpleHybridSearcher(config, nodes)   <span class="c"># unchanged: same hybrid search call</span>
+search_nodes = searcher.process(eg[<span class="s">'question'</span>])
+
+<span class="c"># output filename now carries the chunker, so the 5 strategies don't collide:</span>
+output_path = <span class="s">f'./prediction/&#123;eval_model&#125;/rag_preds_&#123;eval_model&#125;_&#123;chunker&#125;_&#123;context_length&#125;_&#123;context_type&#125;_&#123;query_type&#125;.jsonl'</span></div>
+    <div class="codecap">Everything below <code>searcher = SimpleHybridSearcher(...)</code> is byte-for-byte
+      the same code that ran before this task &mdash; hybrid retrieval, reranking, and the LLM call never
+      needed to know which chunker produced their input.</div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">8</div>
+</section>
+
+<!-- 9. SCORING SCALE 1: BINARY -->
+<section class="slide">
+  <div class="kicker">Scoring &mdash; scale 1</div>
+  <div class="stitle">Binary judge: True / False</div>
+  <div class="fill-mid">
+    <div class="para">LaRA's original judge (<code>compute_score_llm.py</code>). One LLM call per question,
+      forced to a single word.</div>
+    <div class="code">prompt = <span class="s">f"""I will provide you with a question and its groundtruth answer, as well as
+an answer from an AI assistant. You need to judge whether the AI assistant's
+answer is correct based on the groundtruth answer. If it is correct, you
+should only output True; if it is incorrect, only output False."""</span>
+<span class="c">&hellip;</span>
+<span class="k">if</span> <span class="s">'true'</span> <span class="k">in</span> response.lower(): <span class="k">return</span> 1.0
+<span class="k">else</span>: <span class="k">return</span> 0.0</div>
+    <div class="para tight">Deliberately kept unchanged for this task &mdash; it's what the LaRA paper reports,
+      so it stays comparable to published numbers. Its weakness (documented separately for the professor's
+      other ask): a correct-but-reworded answer often reads as "False" to a strict judge, collapsing partial
+      credit to zero.</div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">9</div>
+</section>
+
+<!-- 10. SCORING SCALE 2: NUMERIC -->
+<section class="slide">
+  <div class="kicker">Scoring &mdash; scale 2</div>
+  <div class="stitle">Numeric judge: 0&ndash;10 rubric</div>
+  <div class="fill-mid">
+    <div class="para">A second, independent judge script (<code>compute_score_numeric.py</code>) &mdash;
+      already built for the professor's numerical-scale ask, reused here unchanged.</div>
+    <div class="code">RUBRIC = <span class="s">"""Score the AI assistant's answer against the groundtruth on a 0-10 scale:
+- 10: fully correct and complete (rephrasing is fine).
+-  7-9: correct on the core point(s), missing only minor detail.
+-  4-6: partially correct; gets some but not all key facts.
+-  1-3: mostly incorrect but contains a relevant fragment.
+-  0: completely incorrect, irrelevant, or contradicts the groundtruth."""</span>
+
+<span class="c"># a derived binary verdict keeps it comparable to the old scale:</span>
+binary_verdict = (numeric_score &gt;= BINARY_THRESHOLD)   <span class="c"># default threshold = 7</span></div>
+    <div class="para tight">Same generator answers, same questions, graded by the same 14B judge model
+      &mdash; only the scale and prompt differ. This is what lets slide 12 show binary and numeric
+      disagreeing on the identical answer.</div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">10</div>
+</section>
+
+<!-- 11. WHY BOTH: EXAMPLE -->
+<section class="slide">
+  <div class="kicker">Why both scales &mdash; a real example</div>
+  <div class="stitle">Same answer, same judge model, two verdicts</div>
+  <div class="fill-mid">
+    <div class="exwrap">
+      <div class="exbox" style="flex:0.9;">
+        <h5>Question (reasoning &middot; book &middot; sentence chunker)</h5>
+        <p><b>What lesson does Hartman learn from observing Brimstone's Christmas Eve party?</b></p>
+        <h5 style="margin-top:14px;">Groundtruth</h5>
+        <p>Brimstone's generosity comes from simple gestures, not money; employers can make employees'
+          lives joyful or miserable at low material cost.</p>
+      </div>
+      <div class="exbox" style="flex:1.1;">
+        <h5>Model's answer</h5>
+        <p>&ldquo;Hartman learns the importance of making an effort for others and participating in community
+          traditions, as evidenced by Brimstone's enthusiastic celebration&hellip;&rdquo;</p>
+        <h5 style="margin-top:14px;">Numeric judge's own reasoning</h5>
+        <p>&ldquo;Mentions participation in community traditions but misses the key point about simple
+          gestures and employer influence.&rdquo;</p>
+      </div>
+    </div>
+    <div class="verdictrow">
+      <div class="vpill" style="background:#fdeceb;"><div class="vv" style="color:var(--critical);">False</div><div class="vl">binary judge (0.0)</div></div>
+      <div class="vpill" style="background:#fdf3ea;"><div class="vv" style="color:var(--orange-dark);">4 / 10</div><div class="vl">numeric judge &mdash; partial credit</div></div>
+    </div>
+    <div class="para tight">The binary judge can only say the answer is wrong. The numeric judge says <b>why</b>
+      it's wrong and <b>how</b> wrong &mdash; it captured the general shape of the answer but missed the specific
+      lesson. That distinction is invisible on a 0/1 scale and is exactly the partial-credit signal the
+      professor asked for.</div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">11</div>
+</section>
+
+<!-- 12. EXPERIMENT SETUP -->
+<section class="slide">
+  <div class="kicker">Experiment setup</div>
+  <div class="stitle">Scope of this run</div>
+  <div class="fill-mid">
+    <div class="cols">
+      <div>
+        <h3>Fixed across all cells</h3>
+        <ul>
+          <li>Generator: <b>qwen2.5:7b</b> &middot; Judge: <b>qwen2.5:14b</b> (decoupled, via Ollama)</li>
+          <li>Context length: <b>32k</b> only (chunking behavior is what's under test, not long-context capacity)</li>
+          <li>chunk_size=600 / overlap=100 (where applicable), held constant across all 5 strategies</li>
+          <li>Retrieval: hybrid vector+BM25, top-5 after rerank &mdash; identical for every chunker</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Varied</h3>
+        <ul>
+          <li><b>5 chunkers</b>: token, sentence, recursive, semantic, fast</li>
+          <li><b>3 doc types</b>: book, financial, paper</li>
+          <li><b>4 task types</b>: location, reasoning, comp, hallu</li>
+          <li><b>5 questions</b> per (doc type &times; task type) cell &mdash; a bounded first pass, not the full 2,326-question benchmark</li>
+        </ul>
+      </div>
+    </div>
+    <div class="qbox" style="margin-top:32px;">60 unique questions &times; 5 chunkers = <b>300 generations</b>,
+      judged twice (binary + numeric) = <b>600 judge calls</b>. ~38 minutes end to end.</div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">12</div>
+</section>
+
+<!-- 13. RESULTS TABLE -->
+<section class="slide">
+  <div class="kicker">Results</div>
+  <div class="stitle">Accuracy by chunker and task type (%)</div>
+  <div class="fill-top">
+    <table class="num-table">
+      <thead><tr><th>Chunker</th><th>location<br>bin / num</th><th>reasoning<br>bin / num</th><th>comp<br>bin / num</th><th>hallu<br>bin / num</th><th><b>overall</b><br>bin / num</th></tr></thead>
+      <tbody>
+        <tr><td>token</td><td>66.7 / 82.7</td><td>53.3 / 58.0</td><td>53.3 / 56.0</td><td>80.0 / 76.7</td><td><b>63.3 / 68.3</b></td></tr>
+        <tr><td>sentence</td><td>66.7 / 76.7</td><td>46.7 / 50.7</td><td>40.0 / 56.7</td><td>100.0 / 81.3</td><td><b>63.3 / 66.3</b></td></tr>
+        <tr><td>recursive</td><td>53.3 / 71.3</td><td>60.0 / 49.3</td><td>33.3 / 51.3</td><td>93.3 / 76.7</td><td><b>60.0 / 62.2</b></td></tr>
+        <tr><td>semantic</td><td>60.0 / 62.7</td><td>53.3 / 57.3</td><td>46.7 / 50.0</td><td>86.7 / 82.0</td><td><b>61.7 / 63.0</b></td></tr>
+        <tr><td>fast</td><td>60.0 / 75.3</td><td>40.0 / 44.7</td><td>20.0 / 48.7</td><td>93.3 / 84.0</td><td><b>53.3 / 63.2</b></td></tr>
+      </tbody>
+    </table>
+    <div class="para" style="margin-top:24px;">n=5 questions per cell &mdash; directional, not statistically
+      tight (see limitations). "bin" = binary judge accuracy; "num" = numeric judge's mean score, normalized
+      to a percentage.</div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">13</div>
+</section>
+
+<!-- 14. RESULTS CHART -->
+<section class="slide">
+  <div class="kicker">Results &mdash; overall, visually</div>
+  <div class="stitle">Binary vs numeric accuracy, by chunker</div>
+  <div class="fill-mid">
+    <div class="chartwrap">
+      <div class="legend">
+        <div class="lg"><div class="sw" style="background:var(--blue);"></div>Binary judge</div>
+        <div class="lg"><div class="sw" style="background:var(--orange);"></div>Numeric judge</div>
+      </div>
+      <div class="bgrow">
+        <div class="name">token</div>
+        <div class="bars">
+          <div class="btrack"><div class="bfill" style="width:63.3%;background:var(--blue);"><span>63.3</span></div></div>
+          <div class="btrack"><div class="bfill" style="width:68.3%;background:var(--orange);"><span>68.3</span></div></div>
+        </div>
+      </div>
+      <div class="bgrow">
+        <div class="name">sentence</div>
+        <div class="bars">
+          <div class="btrack"><div class="bfill" style="width:63.3%;background:var(--blue);"><span>63.3</span></div></div>
+          <div class="btrack"><div class="bfill" style="width:66.3%;background:var(--orange);"><span>66.3</span></div></div>
+        </div>
+      </div>
+      <div class="bgrow">
+        <div class="name">recursive</div>
+        <div class="bars">
+          <div class="btrack"><div class="bfill" style="width:60.0%;background:var(--blue);"><span>60.0</span></div></div>
+          <div class="btrack"><div class="bfill" style="width:62.2%;background:var(--orange);"><span>62.2</span></div></div>
+        </div>
+      </div>
+      <div class="bgrow">
+        <div class="name">semantic</div>
+        <div class="bars">
+          <div class="btrack"><div class="bfill" style="width:61.7%;background:var(--blue);"><span>61.7</span></div></div>
+          <div class="btrack"><div class="bfill" style="width:63.0%;background:var(--orange);"><span>63.0</span></div></div>
+        </div>
+      </div>
+      <div class="bgrow">
+        <div class="name">fast</div>
+        <div class="bars">
+          <div class="btrack"><div class="bfill" style="width:53.3%;background:var(--blue);"><span>53.3</span></div></div>
+          <div class="btrack"><div class="bfill" style="width:63.2%;background:var(--orange);"><span>63.2</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="para" style="margin-top:10px;"><b>fast</b> shows the widest gap between scales (53.3 binary vs
+      63.2 numeric) &mdash; its answers get marked wrong more often on the strict 0/1 scale than their actual
+      content quality warrants. That gap is the exact phenomenon the numeric scale exists to surface.</div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">14</div>
+</section>
+
+<!-- 15. INTERPRETATION -->
+<section class="slide">
+  <div class="kicker">Interpretation</div>
+  <div class="stitle">Three takeaways</div>
+  <div class="fill-mid">
+    <div class="tk">
+      <div class="item"><div class="num">1</div><div class="txt"><b>Token chunking ranks first</b> on both scales
+        (63.3 binary / 68.3 numeric overall) in this bounded run &mdash; the simplest strategy, not the most
+        sophisticated one, retrieved the most useful context for the LLM.</div></div>
+      <div class="item"><div class="num">2</div><div class="txt"><b>Fast chunking ranks last on binary but not on
+        numeric</b> (53.3 vs 63.2) &mdash; the same judge-collapse problem already flagged for the professor's
+        other ask shows up again here, strategy-to-strategy, not just model-to-model.</div></div>
+      <div class="item"><div class="num">3</div><div class="txt">Differences between strategies (53&ndash;63%
+        binary, 62&ndash;68% numeric) are <b>real but not large</b> at this sample size &mdash; enough to show the
+        machinery works and to motivate a wider run, not enough to declare a definitive winner yet.</div></div>
+    </div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">15</div>
+</section>
+
+<!-- 16. LIMITATIONS -->
+<section class="slide">
+  <div class="kicker">Limitations &amp; caveats</div>
+  <div class="stitle">What this run does and doesn't show</div>
+  <div class="fill-mid">
+    <div class="cols">
+      <div>
+        <h3>Scope limits</h3>
+        <ul>
+          <li><b>n=5</b> questions per cell (60 unique questions total) &mdash; a bounded first pass, chosen to
+            fit a "this week" turnaround, not the full 2,326-question benchmark.</li>
+          <li><b>32k only</b> &mdash; no long-context comparison in this run.</li>
+          <li>chunk_size held at 600 for comparability; a chunk-size sweep per strategy is a natural follow-up.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The numeric scale isn't perfect either</h3>
+        <ul>
+          <li>Example from this run (fast/comp): an answer that <b>misattributed a character name</b> still
+            scored <b>7/10 &rarr; "True"</b> at the default threshold &mdash; the judge rewarded overall shape
+            over one factual error.</li>
+          <li>Threshold=7 for the derived binary is a choice, not a law; different thresholds shift which
+            strategies look best.</li>
+          <li>Both scales share the same underlying judge model (qwen2.5:14b) &mdash; agreement between scales
+            bounds internal consistency, not ground-truth correctness.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">16</div>
+</section>
+
+<!-- 17. REPRO / WHERE THINGS LIVE -->
+<section class="slide">
+  <div class="kicker">Reproducing this</div>
+  <div class="stitle">One command, plus where the outputs land</div>
+  <div class="fill-mid">
+    <div class="code">LARA_LIMIT=5 ./run_chunker_study.sh
+<span class="c"># override scope, e.g. more examples or fewer chunkers:</span>
+LARA_LIMIT=30 CHUNKERS=<span class="s">"token semantic"</span> ./run_chunker_study.sh</span></div>
+    <table style="margin-top:22px;">
+      <thead><tr><th>Output</th><th>Path</th></tr></thead>
+      <tbody>
+        <tr><td>Per-question logs, both scales</td><td><code>prediction/result/combined_judgments_gen-*_chunker-*.jsonl</code></td></tr>
+        <tr><td>Per-chunker binary accuracy</td><td><code>prediction/result/gen-*_chunker-*_all.csv</code></td></tr>
+        <tr><td>Per-chunker numeric scores</td><td><code>prediction/result/numeric_gen-*_chunker-*_all.csv</code></td></tr>
+        <tr><td>Final comparison table</td><td><code>prediction/result/chunker_comparison.csv</code></td></tr>
+      </tbody>
+    </table>
+    <div class="para" style="margin-top:24px;">Next step, pending professor feedback: widen <code>LARA_LIMIT</code>
+      for a statistically firmer ranking, and/or sweep chunk_size per strategy.</div>
+  </div>
+  <div class="brand">LaRA &times; Chonkie chunker study</div><div class="pnum">17</div>
+</section>
+
+</body></html>
