@@ -90,6 +90,55 @@ two harsh "False"s on answers that were largely right. This matches our own judg
 2. Reproduce a small smoke run (32k / book / one task) to confirm the pipeline works here.
 3. Then tackle Task A (agree deliverable form) and Task B (brainstorm the scale design) — in that order.
 
+## 4b. Chonkie chunker study (DONE, 2026-08-05) — separate ask from Task A/B above
+
+A third, separate ask came in mid-session: "build a LaRA evaluation pipeline that uses
+Chonkie directly for chunking... don't worry about Doug's MongoDB/Langfuse/LangGraph."
+This is now implemented and run once. Was previously scoped-but-not-built in
+`CHUNKER_INTEGRATION_SCOPE.md` (that file's design rationale is still accurate; status
+line there now points here).
+
+**What was built:**
+- `evaluation/chunkers.py` — single seam, `get_nodes(text, strategy)` builds one of
+  Chonkie's 5 chunkers (token/sentence/recursive/semantic/fast) and wraps output as
+  llama-index `TextNode`s. chunk_size=600/overlap=100 held constant across strategies
+  (recursive/semantic/fast have no overlap knob in Chonkie — real, not a bug).
+- `eval_rag.py` — added `--chunker` flag, replaced the old `SentenceSplitter` +
+  `IngestionPipeline` block with one call into `chunkers.py`. Everything downstream
+  (BGE embed, BM25, hybrid fusion, rerank, LLM call — all in
+  `search/simpleHybridSearcher.py`) is untouched; it re-embeds nodes itself so the
+  chunker adapter only needs to produce `.text`.
+- `compute_score_llm.py`, `compute_score_numeric.py`, `merge_judgments.py` — all got a
+  matching `--chunker` flag (skips full-context, which doesn't chunk).
+- `run_chunker_study.sh` — new orchestration script, sweeps all 5 chunkers x 3 doc
+  types x 4 task types, judges both scales, merges logs, aggregates.
+- `aggregate_chunker_results.py` — new, builds the final comparison CSV.
+- `LaRA_chunker_study_deck.html` / `.pdf` — 17-slide deck for the professor (same
+  visual system as `LaRA_judge_study_deck.html`), covers the ask, the pipeline,
+  the code, both scoring scales with a real example, results, limitations.
+  Built with weasyprint (installed in a throwaway scratch venv, NOT added to
+  the project's own venv/requirements.txt — keep it that way, it's a one-off doc tool).
+
+**Scoring decision:** kept LaRA's own LLM-as-judge (binary AND the numeric 0-10 scale
+from Task B), did NOT switch to semantic-similarity scoring — that was floated during
+brainstorming but explicitly dropped in favor of reusing the already-validated judge
+so chunking strategy is the only new variable.
+
+**Bounded first run (2026-08-05):** `LARA_LIMIT=5`, 32k only, 3 doc types x 4 task
+types x 5 chunkers = 60 unique questions / 300 generations / 600 judge calls, gen
+qwen2.5:7b, judge qwen2.5:14b. Result: `token` chunker ranked first on both scales
+(63.3% binary / 68.3% numeric overall); `fast` showed the widest binary-vs-numeric
+gap (53.3 / 63.2) — same judge-collapse phenomenon as Task B, now shown across
+chunking strategies too. Full table in `prediction/result/chunker_comparison.csv`.
+This is a small-n directional run, not a statistically tight ranking — natural next
+step is widening `LARA_LIMIT` and/or sweeping chunk_size per strategy, pending
+feedback from the professor.
+
+**Pending:** an email to the professor summarizing this was drafted in-conversation
+(not sent, not saved as a Gmail draft — recipient addresses were never confirmed).
+Deck + per-chunker `combined_judgments_*.jsonl` logs were scp'd to Aaditya's Mac
+(`~/Downloads`) for him to attach and send himself.
+
 ## 5. Existing docs map
 - `PROGRESS_NOTES.md` — full local-run history, decisions, code fixes, blockers.
 - `STUDY_RESULTS.md` (in `evaluation/`) — the 2×2 generator×judge study + conclusions.
