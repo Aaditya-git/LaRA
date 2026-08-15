@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# LaRA local pipeline, from scratch:  check -> clear -> generate -> verify -> judge
+# LaRA local pipeline, from scratch:  check -> clear -> generate -> verify -> judge -> score
 #
 # Usage:
 #   bash run_pipeline.sh
@@ -36,6 +36,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 PY="$SCRIPT_DIR/../venv/bin/python"
 
+# same sanitizing + gen/judge tag compute_score_llm.py and compute_score_numeric.py use
+# internally to name their output files (":" and "/" -> "-"). MODEL is used as both
+# generator and judge here, so CELL_TAG covers both scripts' outputs.
+SAFE_MODEL="${MODEL//:/-}"; SAFE_MODEL="${SAFE_MODEL//\//-}"
+CELL_TAG="gen-${SAFE_MODEL}_judge-${SAFE_MODEL}"
+
 export OPENAI_BASE_URL="${OPENAI_BASE_URL:-http://localhost:11434/v1}"  # local Ollama
 export OPENAI_API_KEY="${OPENAI_API_KEY:-ollama}"                      # dummy key
 export OLLAMA_NUM_CTX="${OLLAMA_NUM_CTX:-32768}"                       # full context
@@ -63,10 +69,14 @@ echo "MODEL=$MODEL  LIMIT=${LIMIT:-ALL}  DEBUG=$DEBUG  WORKERS=$WORKERS"
 # ---- 1. clear old outputs (both gen and scoring skip existing files) ----
 banner "1. Clearing old outputs for $MODEL"
 rm -f prediction/"$MODEL"/*.jsonl
-rm -f "prediction/result/${MODEL}_all.jsonl" \
-      "prediction/result/${MODEL}_order.jsonl" \
-      "prediction/result/${MODEL}_all.csv" \
-      "prediction/result/judge_debug_${MODEL}.jsonl"
+rm -f "prediction/result/${CELL_TAG}_all.jsonl" \
+      "prediction/result/${CELL_TAG}_order.jsonl" \
+      "prediction/result/${CELL_TAG}_all.csv" \
+      "prediction/result/judge_debug_${CELL_TAG}.jsonl" \
+      "prediction/result/numeric_${CELL_TAG}_all.jsonl" \
+      "prediction/result/numeric_${CELL_TAG}_order.jsonl" \
+      "prediction/result/numeric_${CELL_TAG}_all.csv" \
+      "prediction/result/numeric_judge_debug_${CELL_TAG}.jsonl"
 echo "cleared."
 
 # ---- 2. generate answers ----
@@ -94,11 +104,26 @@ if [ ${#files[@]} -eq 0 ]; then
 fi
 for f in "${files[@]}"; do printf "  %3d  %s\n" "$(wc -l < "$f")" "$(basename "$f")"; done
 
-# ---- 4. judge / score ----
-banner "4. Judging with $MODEL"
+# ---- 4. judge / score (binary True/False, LaRA's own judge) ----
+banner "4. Judging with $MODEL (binary)"
 unset LARA_LIMIT
 LARA_JUDGE_DEBUG="$DEBUG" LARA_WORKERS="$WORKERS" \
   "$PY" compute_score_llm.py --eval_model "$MODEL"
 
+# ---- 5. numeric scoring (0-10 scale + derived binary, separate script/output) ----
+banner "5. Scoring with $MODEL (numeric 0-10)"
+LARA_JUDGE_DEBUG="$DEBUG" LARA_WORKERS="$WORKERS" \
+  "$PY" compute_score_numeric.py --eval_model "$MODEL"
+
+# ---- 6. merge both judging scales into one combined log (needs DEBUG=1 logs) ----
+if [ "$DEBUG" = "1" ]; then
+  banner "6. Merging binary + numeric judgments"
+  "$PY" merge_judgments.py --eval_model "$MODEL"
+else
+  echo "DEBUG=0: skipping merge (no per-question logs to combine)."
+fi
+
 banner "DONE"
-echo "Debug log: prediction/result/judge_debug_${MODEL}.jsonl"
+echo "Binary debug log:   prediction/result/judge_debug_${CELL_TAG}.jsonl"
+echo "Numeric debug log:  prediction/result/numeric_judge_debug_${CELL_TAG}.jsonl"
+echo "Combined debug log: prediction/result/combined_judgments_${CELL_TAG}.jsonl"
