@@ -12,12 +12,8 @@ import requests
 import concurrent.futures
 import os
 import dashscope
-from llama_index.core import Document
-from llama_index.core.node_parser import SentenceSplitter
-from llama_index.core.ingestion import IngestionPipeline
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from search.simpleHybridSearcher import SimpleHybridSearcher
-from model_cache import get_embed_model
+import chunkers
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -25,12 +21,15 @@ parser.add_argument('--query_type', type=str, help='the type of the query')
 parser.add_argument('--context_type', type=str, help='the type of the context')
 parser.add_argument('--context_length', type=str, help='the length of the context')
 parser.add_argument('--eval_model', type=str, help='model')
+parser.add_argument('--chunker', default='sentence', choices=chunkers.STRATEGIES,
+                     help='Chonkie chunking strategy for the RAG path (default: sentence)')
 
 args = parser.parse_args()
 eval_model = args.eval_model
 query_type = args.query_type
 context_type = args.context_type
 context_length = args.context_length
+chunker = args.chunker
 
 api_key = ""
 org_id = ""
@@ -93,25 +92,9 @@ def process_example(eg):
     with open(eg_file_path, 'r', encoding='utf-8') as f:
         eg_txt = f.read()
 
-    # set the retriever
-    transformations = []
-    splitter = SentenceSplitter(
-        include_metadata=True, include_prev_next_rel=True,
-        chunk_size=600,
-        chunk_overlap=100,
-        separator=' ',       
-        paragraph_separator='\n\n\n', secondary_chunking_regex='[^,.;。？！]+[,.;。？！]?')
-    transformations.append(splitter)
-    embed_model = get_embed_model(EMBED_MODEL)
-    transformations.append(embed_model)
-    pipeline = IngestionPipeline(
-        transformations=transformations
-    )
-
-    # Retrieve relevant chunks
-    eg_doc = Document(text=eg_txt)
-    documents = [eg_doc]
-    nodes = pipeline.run(documents=documents, show_progress=False)
+    # chunk with the selected Chonkie strategy; SimpleHybridSearcher re-embeds
+    # nodes itself (VectorStoreIndex(nodes, embed_model=...)), so nodes only need .text
+    nodes = chunkers.get_nodes(eg_txt, chunker)
     config = {
         "class_name": "SimpleHybridSearcher",
         "class_file": "simpleHybridSearcher",
@@ -155,7 +138,7 @@ if __name__ == "__main__":
     examples = load_data(data_path)
     if os.environ.get("LARA_LIMIT"):
         examples = examples[:int(os.environ["LARA_LIMIT"])]
-    output_path = f'./prediction/{eval_model}/rag_preds_{eval_model}_{context_length}_{context_type}_{query_type}.jsonl'
+    output_path = f'./prediction/{eval_model}/rag_preds_{eval_model}_{chunker}_{context_length}_{context_type}_{query_type}.jsonl'
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     tokenizer = tiktoken.encoding_for_model("gpt-4")
