@@ -43,6 +43,8 @@ banner "CLEAN"
 rm -f prediction/"$WEAK"/*.jsonl prediction/"$STRONG"/*.jsonl
 rm -f prediction/result/gen-*_all.jsonl prediction/result/gen-*_order.jsonl \
       prediction/result/gen-*_all.csv prediction/result/judge_debug_gen-*.jsonl \
+      prediction/result/numeric_gen-*_all.jsonl prediction/result/numeric_gen-*_order.jsonl \
+      prediction/result/numeric_gen-*_all.csv prediction/result/numeric_judge_debug_gen-*.jsonl \
       prediction/result/STUDY_matrix.csv
 echo "cleared old predictions + study results."
 
@@ -64,12 +66,17 @@ generate() {
   unset LARA_LIMIT LARA_WORKERS
 }
 
-# ---- judge one cell ----
+# ---- judge one cell (binary True/False, then numeric 0-10, separate script/output) ----
 judge() {
   local GEN="$1" JUDGE="$2"
-  banner "JUDGE  generator=$GEN  by  judge=$JUDGE"
+  banner "JUDGE  generator=$GEN  by  judge=$JUDGE  (binary)"
   LARA_JUDGE_DEBUG=1 LARA_WORKERS=4 \
     "$PY" compute_score_llm.py --eval_model "$GEN" --judge_model "$JUDGE"
+  banner "SCORE  generator=$GEN  by  judge=$JUDGE  (numeric 0-10)"
+  LARA_JUDGE_DEBUG=1 LARA_WORKERS=4 \
+    "$PY" compute_score_numeric.py --eval_model "$GEN" --judge_model "$JUDGE"
+  banner "MERGE  generator=$GEN  by  judge=$JUDGE  (binary + numeric combined log)"
+  "$PY" merge_judgments.py --eval_model "$GEN" --judge_model "$JUDGE"
 }
 
 generate "$WEAK"
