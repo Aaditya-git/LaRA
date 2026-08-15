@@ -19,16 +19,21 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--eval_model', default='qwen2.5-7b-instruct', type=str, help='which model generated the predictions to read')
 parser.add_argument('--judge_model', default=None, type=str, help='model that does the grading; defaults to --eval_model')
+parser.add_argument('--chunker', default=None, type=str,
+                     help='Chonkie chunking strategy the RAG predictions were generated with '
+                          '(token/sentence/recursive/semantic/fast). Only applies to rag_preds_*; '
+                          'when set, full-context predictions are skipped since chunking does not apply there.')
 
 args = parser.parse_args()
 
 eval_model = args.eval_model
 judge_model = args.judge_model or eval_model
+chunker = args.chunker
 
-# distinct result-file tag per (generator, judge) cell so the 4 runs don't overwrite each other
+# distinct result-file tag per (generator, judge[, chunker]) cell so runs don't overwrite each other
 _safe_eval = eval_model.replace(':', '-').replace('/', '-')
 _safe_judge = judge_model.replace(':', '-').replace('/', '-')
-CELL = f'gen-{_safe_eval}_judge-{_safe_judge}'
+CELL = f'gen-{_safe_eval}_judge-{_safe_judge}' + (f'_chunker-{chunker}' if chunker else '')
 
 import threading
 
@@ -184,12 +189,16 @@ length_list = ['32k', '128k']
 save_all_path = f'./prediction/result/{CELL}_all.jsonl'
 save_order_path = f'./prediction/result/{CELL}_order.jsonl'
 
-for rag_or_full in ['rag', 'full']:
+# chunking only applies to the RAG path; when --chunker is set, skip full-context entirely
+rag_or_full_list = ['rag'] if chunker else ['rag', 'full']
+
+for rag_or_full in rag_or_full_list:
     for context_length in length_list:
         for query_type in query_type_list:
-            for context_type in context_type_list:      
-                check = f'{rag_or_full}_{eval_model}_{context_length}_{context_type}_{query_type}'
-                data_path = f'./prediction/{eval_model}/{rag_or_full}_preds_{eval_model}_{context_length}_{context_type}_{query_type}.jsonl'
+            for context_type in context_type_list:
+                chunker_tag = f'{chunker}_' if (chunker and rag_or_full == 'rag') else ''
+                check = f'{rag_or_full}_{eval_model}_{chunker_tag}{context_length}_{context_type}_{query_type}'
+                data_path = f'./prediction/{eval_model}/{rag_or_full}_preds_{eval_model}_{chunker_tag}{context_length}_{context_type}_{query_type}.jsonl'
                 if not os.path.exists(data_path):
                     continue  # no predictions generated for this config; skip silently
                 print("\n============================================================")
@@ -197,16 +206,10 @@ for rag_or_full in ['rag', 'full']:
                     with open(save_all_path, 'r') as f:
                         check_str = f.read()
                     if check in check_str:
-                        print(f"{rag_or_full}_{eval_model}_{context_length}_{context_type}_{query_type} is already evaluated.")
+                        print(f"{check} is already evaluated.")
                         continue
 
-                print(f"current data is {rag_or_full}_{eval_model}_{context_length}_{context_type}_{query_type}")
-                  
-                data_path = f'./prediction/{eval_model}/{rag_or_full}_preds_{eval_model}_{context_length}_{context_type}_{query_type}.jsonl'
-
-                if not os.path.exists(data_path):
-                    print(f"skip (no predictions): {data_path}")
-                    continue
+                print(f"current data is {check}")
 
                 score_all = 0.0
                 cnt_all = 0
@@ -239,12 +242,12 @@ for rag_or_full in ['rag', 'full']:
                 grand_false += n_false
                 grand_err += err_all
                 with open(save_all_path, 'a') as f:
-                    f.write(f'{rag_or_full}_{eval_model}_{context_length}_{context_type}_{query_type}: {score_all_avg}, cnt:{cnt_all}\n')
+                    f.write(f'{check}: {score_all_avg}, cnt:{cnt_all}\n')
                 if query_type in ['location', 'reasoning']:
                     with open(save_order_path, 'a') as f:
                         for loc in score_location:
                             acc = score_location[loc] / cnt_location[loc]
-                            f.write(f'{rag_or_full}_{eval_model}_{context_length}_{context_type}_{query_type}:\n')
+                            f.write(f'{check}:\n')
                             f.write(f'\tlocation {loc}: accuracy: {acc}, cnt: {cnt_location[loc]}\n')
                 print(f"[{check}]  TRUE: {n_true}/{cnt_all}   FALSE: {n_false}/{cnt_all}   ERRORS: {err_all}   ->  accuracy: {score_all_avg:.4f}")
 
