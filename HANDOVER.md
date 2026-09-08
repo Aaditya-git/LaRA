@@ -275,16 +275,75 @@ Swap `eval_rag.py` for `eval_full.py` (drop `--chunker`/`--top_k`, they don't ap
 Long-Context mode instead. `--query_type` is one of `location`/`reasoning`/`comp`/`hallu`;
 `--context_type` is one of `book`/`paper`/`financial`; `--context_length` is `32k`/`128k`.
 
-### 5.4 Run the smoke test / a custom batch of configs
+### 5.4 `run_pipeline.sh` — the "do everything for one run" script
 
+This is the script to reach for by default, and the one to demo if someone asks "how do I
+run this project?" It's the **generate → judge → merge** loop from §3, driven by a short
+settings block you edit at the top of the file.
+
+**Settings block** (top of `run_pipeline.sh`), all overridable from the command line:
 ```bash
-cd evaluation
-# edit the CONFIGS array at the top of run_pipeline.sh first if you want different configs
+MODEL="qwen2.5:7b"   # the Ollama model — used as BOTH the answer-writer and the judge
+LIMIT=5              # questions per config (5 = smoke test; "" = every question, slow)
+DEBUG=1              # 1 = log every judge decision to a file you can inspect afterward
+WORKERS=1            # how many questions to judge in parallel
+
+CONFIGS=(
+  "full 32k paper reasoning"
+  "full 32k book reasoning"
+  "rag  32k book reasoning"
+)
+```
+Each `CONFIGS` line is `mode length context_type query_type`:
+`mode` = `full` (whole document in the prompt) or `rag` (retrieve chunks first) · `length` =
+`32k`/`128k` · `context_type` = `book`/`paper`/`financial` · `query_type` =
+`location`/`reasoning`/`comp`/`hallu`. This list is *what gets tested* — edit it, save, rerun.
+
+**What the script does, in order, and which file it calls for each step:**
+
+| Step | What happens | File it calls |
+|---|---|---|
+| 0. Checks | Confirms the venv exists, Ollama answers on `:11434`, and `MODEL` is pulled. Fails fast with a clear message instead of limping partway through. | — |
+| 1. Clear old outputs | Deletes any previous prediction/result files for this exact `MODEL`, so the run starts clean. | — |
+| 2. Generate | For each `CONFIGS` line, calls `eval_full.py` or `eval_rag.py` (per its `mode`) with the matching `--context_length/--context_type/--query_type/--eval_model`. This is where the LLM actually writes answers. | `eval_full.py` / `eval_rag.py` |
+| 3. Verify | Prints a line-count for every prediction file produced; aborts if generation produced nothing, before wasting time grading it. | — |
+| 4. Judge (binary) | Sends each (question, correct answer, model's answer) to the judge, asks for plain True/False. | `compute_score_llm.py` |
+| 5. Judge (numeric) | Same idea, but asks for a 0–10 score against a rubric instead of True/False — the graded scale from Task B (§7.3), since binary was too harsh on partially-right answers. | `compute_score_numeric.py` |
+| 6. Merge | Stitches the binary and numeric judge's per-question notes into one file, so both verdicts for the same question sit side by side. | `merge_judgments.py` |
+
+```
+run_pipeline.sh
+   ├── eval_full.py / eval_rag.py      → writes prediction/<model>/*.jsonl
+   ├── compute_score_llm.py            → binary True/False grading
+   ├── compute_score_numeric.py        → 0-10 graded scoring
+   └── merge_judgments.py              → combines both judges' notes per question
+```
+
+Two separate scoring scripts is intentional, not redundant: `compute_score_llm.py` is the
+benchmark's original scoring method, kept untouched for comparability with the published
+paper; `compute_score_numeric.py` was added in this fork because a hard True/False was
+marking correct-but-differently-worded answers as wrong (§7.1, §7.3).
+
+**How to run it:**
+```bash
+cd ~/LaRA/evaluation
+ollama serve &                  # if not already running
+ollama pull qwen2.5:7b          # if not already pulled
 LARA_LIMIT=5 bash run_pipeline.sh
 ```
 
-Does generate → verify prediction counts exist → judge (both scales) → merge, in one shot,
-with a saved transcript in `evaluation/logs/`.
+**What you'll see, and where it lands:**
+- Live in the terminal: a banner per step, then per-config lines like
+  `[full_qwen2.5:7b_32k_book_reasoning]  TRUE: 3/5  FALSE: 2/5  ERRORS: 0  -> accuracy: 0.6000`
+- Saved transcript: `evaluation/logs/run_<timestamp>_<model>.log`
+- Results: `evaluation/prediction/result/gen-<model>_judge-<model>_all.csv` (binary) and
+  `numeric_gen-<model>_judge-<model>_all.csv` (0–10 scale)
+- Per-question detail (open this if someone asks "why did it get that one wrong?"):
+  `evaluation/prediction/result/combined_judgments_gen-<model>_judge-<model>.jsonl`
+
+`MODEL` plays both generator and judge here — for a genuinely independent judge (a stronger
+model grading a weaker one, which §7.1 shows matters a lot), use the manual commands in §5.3
+with separate `--eval_model`/`--judge_model`, or `run_study.sh` in §5.5.
 
 ### 5.5 Run one of the three full studies
 
