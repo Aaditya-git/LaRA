@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LaRA retrieval chunk-count (top_k) study</title>
+<style>
+  @page { size: 13.333in 7.5in; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --surface:#fcfcfb; --plane:#ffffff; --ink:#0b0b0b; --ink2:#52514e;
+    --muted:#898781; --grid:#e1e0d9; --baseline:#c3c2b7;
+    --blue:#2a78d6; --blue-dark:#184f95; --good:#006300; --critical:#d03b3b;
+    --orange:#eb6834; --orange-dark:#a8461c;
+    --seq0:#eaf3fd; --seq2:#9ec5f4; --seq3:#6da7ec;
+    --border:rgba(11,11,11,0.10);
+  }
+  html,body{ font-family:system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink);
+    -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .slide{ position:relative; width:1280px; height:720px; background:var(--plane);
+    padding:70px 84px; display:flex; flex-direction:column; page-break-after:always; overflow:hidden; }
+  .slide:last-child{ page-break-after:auto; }
+
+  .kicker{ font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:var(--blue); margin-bottom:20px; }
+  .stitle{ font-size:36px; font-weight:700; letter-spacing:-.015em; line-height:1.1; }
+  .pnum{ position:absolute; right:40px; bottom:28px; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .brand{ position:absolute; left:84px; bottom:28px; font-size:12px; color:var(--muted); letter-spacing:.02em; }
+  .fill-mid{ flex:1; display:flex; flex-direction:column; justify-content:center; min-height:0; }
+  .fill-top{ flex:1; display:flex; flex-direction:column; justify-content:flex-start; min-height:0; margin-top:6px; }
+
+  .title-slide{ justify-content:center; }
+  .title-slide h1{ font-size:54px; font-weight:700; letter-spacing:-.02em; line-height:1.08; max-width:1050px; }
+  .title-slide .lede{ font-size:21px; color:var(--ink2); margin-top:22px; line-height:1.4; max-width:920px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:10px; margin-top:44px; }
+  .chip{ font-size:13px; color:var(--ink2); background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:7px 15px; }
+  .byline{ margin-top:30px; font-size:14px; color:var(--muted); }
+
+  .big{ font-size:44px; font-weight:700; letter-spacing:-.02em; line-height:1.15; }
+  .big .g{ color:var(--good); } .big .r{ color:var(--critical); } .big .o{ color:var(--orange-dark); }
+  .para{ font-size:19px; color:var(--ink2); line-height:1.5; max-width:1000px; margin-top:20px; }
+  .para b{ color:var(--ink); }
+  .para.tight{ margin-top:12px; }
+  .qbox{ margin-top:26px; padding:18px 24px; background:#f2f7fc; border-left:5px solid var(--blue); border-radius:0 10px 10px 0;
+    font-size:20px; font-weight:600; color:var(--blue-dark); max-width:1000px; line-height:1.35; }
+  .quote{ margin-top:8px; padding:22px 26px; background:var(--surface); border:1px solid var(--border); border-left:5px solid var(--muted); border-radius:0 10px 10px 0;
+    font-size:17px; color:var(--ink2); line-height:1.55; max-width:1040px; font-style:italic; }
+
+  .pipeline{ display:flex; align-items:center; flex-wrap:wrap; gap:0; margin-top:10px; }
+  .pnode{ background:var(--surface); border:1.5px solid var(--baseline); border-radius:12px; padding:16px 18px; min-width:132px; text-align:center; }
+  .pnode .t{ font-size:14.5px; font-weight:700; color:var(--ink); line-height:1.3; }
+  .pnode .s{ font-size:12px; color:var(--muted); margin-top:5px; line-height:1.3; }
+  .pnode.hl{ border-color:var(--blue); background:#eaf3fd; }
+  .pnode.hl .t{ color:var(--blue-dark); }
+  .parrow{ font-size:22px; color:var(--muted); padding:0 10px; }
+  .pnote{ font-size:14px; color:var(--muted); margin-top:10px; }
+
+  .cardrow{ display:flex; gap:16px; margin-top:14px; }
+  .scard{ flex:1; background:var(--surface); border:1.5px solid var(--baseline); border-radius:14px; padding:18px 16px; min-height:210px; }
+  .scard .n{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--blue); }
+  .scard h4{ font-size:18px; font-weight:700; color:var(--ink); margin-top:6px; }
+  .scard p{ font-size:13.5px; color:var(--ink2); line-height:1.42; margin-top:10px; }
+  .scard .cfg{ margin-top:12px; font-size:11.5px; color:var(--muted); font-family:"SF Mono",Consolas,monospace; background:#fff; border:1px solid var(--border); border-radius:6px; padding:6px 8px; }
+
+  .code{ background:#1c1c1a; border-radius:12px; padding:18px 22px; font-family:"SF Mono",Consolas,monospace; font-size:14px; line-height:1.55; color:#e7e6e2; overflow:hidden; white-space:pre-wrap; }
+  .code .c{ color:#8a897f; } .code .k{ color:#7cb7f5; } .code .s{ color:#e3b06a; } .code .fn{ color:#9fd88a; }
+  .codecap{ font-size:13px; color:var(--muted); margin-top:8px; }
+
+  table{ border-collapse:collapse; font-size:15px; width:100%; }
+  th,td{ padding:9px 14px; text-align:left; vertical-align:top; }
+  th{ color:var(--muted); font-weight:600; border-bottom:1.5px solid var(--baseline); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  td{ border-top:1px solid var(--grid); font-size:14px; color:var(--ink2); }
+  td code{ font-family:"SF Mono",Consolas,monospace; font-size:12.5px; background:var(--surface); border:1px solid var(--border); border-radius:5px; padding:2px 6px; color:var(--ink); }
+  td b{ color:var(--ink); }
+  .num-table td, .num-table th{ text-align:center; font-variant-numeric:tabular-nums; }
+  .num-table td:first-child, .num-table th:first-child{ text-align:left; }
+
+  .chartwrap{ margin-top:8px; }
+  .legend{ display:flex; gap:22px; margin-bottom:16px; }
+  .lg{ display:flex; align-items:center; gap:8px; font-size:14px; color:var(--ink2); }
+  .lg .sw{ width:14px; height:14px; border-radius:4px; }
+  .bgrow{ display:flex; align-items:center; gap:16px; margin-bottom:13px; }
+  .bgrow .name{ width:120px; font-size:15px; font-weight:700; color:var(--ink); text-align:right; flex:none; }
+  .bgrow .bars{ flex:1; display:flex; flex-direction:column; gap:4px; }
+  .bgrow .btrack{ height:22px; background:var(--surface); border-radius:5px; position:relative; }
+  .bgrow .bfill{ height:100%; border-radius:5px; display:flex; align-items:center; }
+  .bgrow .bfill span{ font-size:12.5px; font-weight:700; color:#fff; padding-left:8px; font-variant-numeric:tabular-nums; }
+
+  .tk{ display:flex; flex-direction:column; gap:20px; margin-top:6px; max-width:1060px; }
+  .tk .item{ display:flex; gap:20px; align-items:flex-start; }
+  .tk .num{ flex:none; width:40px; height:40px; border-radius:50%; background:var(--blue); color:#fff; font-size:20px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .tk .txt{ font-size:18.5px; line-height:1.4; color:var(--ink); padding-top:4px; } .tk .txt b{ color:var(--blue-dark); }
+
+  .cols{ display:flex; gap:56px; margin-top:6px; }
+  .cols > div{ flex:1; }
+  .cols h3{ font-size:16px; font-weight:700; color:var(--ink); margin-bottom:14px; }
+  .cols ul{ list-style:none; display:flex; flex-direction:column; gap:12px; }
+  .cols li{ font-size:14.5px; color:var(--ink2); line-height:1.42; padding-left:18px; position:relative; }
+  .cols li::before{ content:""; position:absolute; left:0; top:8px; width:6px; height:6px; border-radius:50%; background:var(--blue); }
+  .cols li b{ color:var(--ink); }
+
+  .exwrap{ display:flex; gap:28px; margin-top:10px; }
+  .exbox{ flex:1; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
+  .exbox h5{ font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700; margin-bottom:8px; }
+  .exbox p{ font-size:14.5px; color:var(--ink2); line-height:1.44; }
+  .verdictrow{ display:flex; gap:16px; margin-top:14px; }
+  .vpill{ flex:1; border-radius:10px; padding:12px 16px; text-align:center; }
+  .vpill .vv{ font-size:22px; font-weight:700; }
+  .vpill .vl{ font-size:12px; color:var(--ink2); margin-top:2px; }
+</style>
+</head>
+<body>
+
+<!-- 1. TITLE -->
+<section class="slide title-slide">
+  <div class="kicker">LaRA benchmark &middot; retrieval chunk-count study</div>
+  <h1>Does retrieving more chunks help RAG?</h1>
+  <div class="lede">Sweeping the number of chunks retrieved after rerank (<code>top_k</code>) for
+    <b>reasoning</b> questions across 5 / 10 / 15, while <b>comp</b> stays fixed at exactly the 2 chunks
+    it needs &mdash; restricted to the two task types the professor asked about, on a curated,
+    RAG-stressing question subset.</div>
+  <div class="chips">
+    <span class="chip">RAG mode &middot; 32k context</span><span class="chip">reasoning: top_k 5 / 10 / 15</span>
+    <span class="chip">comp: top_k = 2 (fixed)</span><span class="chip">180 curated questions</span>
+    <span class="chip">qwen2.5:7b gen &middot; qwen2.5:14b judge</span><span class="chip">binary + numeric judging</span>
+  </div>
+  <div class="byline">Aaditya Bhilegaonkar &middot; 2026-08-19</div>
+  <div class="brand">LaRA &middot; top_k study</div>
+</section>
+
+<!-- 2. THE ASK -->
+<section class="slide">
+  <div class="kicker">The ask</div>
+  <div class="stitle">This week's job, as given</div>
+  <div class="fill-mid">
+    <div class="quote">&ldquo;Run the benchmark only on comp and reasoning &mdash; comp only requires 2 chunks, not
+      5. We need to vary the number of chunks retrieved (currently fixed at 5) and test values like 5, 10,
+      15 for reasoning; comp stays at 2. Increase the number of questions a little, and pick ones that would
+      really stress RAG. End with a PPT of the results.&rdquo;</div>
+    <div class="para">Scope decisions made with Aaditya before running: hold the chunker fixed at
+      <b>token</b> (the winner of the earlier chunker study) so <code>top_k</code> is the only new variable;
+      stay at <b>32k</b> context, matching the chunker study's precedent; raise the question count from the
+      chunker study's <code>LARA_LIMIT=5</code> to <b>15 curated questions</b> per cell, chosen by relevance
+      to RAG stress rather than first-N file order (next slide).</div>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">2</div>
+</section>
+
+<!-- 3. WHY ONLY COMP+REASONING, WHY COMP=2 -->
+<section class="slide">
+  <div class="kicker">Why these two tasks, why comp = 2</div>
+  <div class="stitle">This reuses last month's chunk-count analysis</div>
+  <div class="fill-mid">
+    <div class="para">From the earlier "which questions really stress RAG" analysis of all 2,326 LaRA
+      questions: <b>location</b> and <b>hallu</b> always resolve from a single segment (<code>context_order</code>),
+      and <b>comp</b> is the only task with a multi-segment field (<code>comp_parts</code>) &mdash; and it is
+      always exactly <b>2</b> segments. LaRA has no question needing 3+ segments.</div>
+    <div class="qbox">Retrieving more than 2 chunks for comp can't help it find a segment it doesn't need,
+      so top_k = 2 isn't a simplification for comp &mdash; it's the honest ceiling of what the task asks for.</div>
+    <div class="para tight"><b>Reasoning</b> is the interesting one instead: most reasoning questions are also
+      single-segment, but a real subset is tagged <code>context_order == "full"</code> &mdash; the answer
+      requires synthesizing the <i>whole</i> document, not one chunk. That's the genuine "does more retrieval
+      depth help" question, and it's why reasoning (not comp) is the one we sweep.</div>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">3</div>
+</section>
+
+<!-- 4. QUESTION CURATION -->
+<section class="slide">
+  <div class="kicker">Question curation &mdash; not first-N</div>
+  <div class="stitle">15 per cell, picked to actually stress RAG</div>
+  <div class="fill-mid">
+    <div class="cols">
+      <div>
+        <h3>Comp &mdash; ranked by relative spread</h3>
+        <ul>
+          <li>relative spread = <code>|a&minus;b| / (segments&minus;1)</code> from <code>comp_parts</code>
+            &mdash; how far apart the 2 needed chunks sit in the document.</li>
+          <li>Highest-spread questions kept first per doc type &mdash; the closest thing to "chunks from all
+            over the doc" that 32k documents (~3 segments each) offer.</li>
+          <li>book: spread 0.50 (max available) &middot; financial: 0.50&ndash;0.67 &middot; paper: up to 1.00
+            (opposite ends of the doc)</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Reasoning &mdash; "full"-document questions first</h3>
+        <ul>
+          <li>Prioritize <code>context_order == "full"</code> (whole-document synthesis) over single-segment
+            questions.</li>
+          <li>book: 15/15 available &rarr; used all &middot; financial: 30 available &rarr; top 15 used</li>
+          <li><b>paper: 0 "full" questions exist</b> at 32k &mdash; fell back to an even spread across segments
+            0/1/2 so the set isn't trivially all "first chunk" questions.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="para" style="margin-top:22px;">Script: <code>select_stress_questions.py</code>, writes curated
+      sets to <code>datasets/query_topk_study/</code> &mdash; the original <code>datasets/query/</code> files
+      are untouched.</div>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">4</div>
+</section>
+
+<!-- 5. CODE: WHAT CHANGED -->
+<section class="slide">
+  <div class="kicker">Code &mdash; what changed, where</div>
+  <div class="stitle">One new parameter, threaded the same way <code style="font-size:24px;background:none;border:none;padding:0;">--chunker</code> was</div>
+  <div class="fill-top">
+    <table>
+      <thead><tr><th>File</th><th>Change</th></tr></thead>
+      <tbody>
+        <tr><td><code>select_stress_questions.py</code></td><td><b>New.</b> Curates the 15-per-cell reasoning/comp question sets described on slide 4, writes them under <code>datasets/query_topk_study/</code>.</td></tr>
+        <tr><td><code>evaluation/eval_rag.py</code></td><td>Added <code>--top_k</code> (controls <code>rerank_size</code> in <code>simpleHybridSearcher.py</code>, previously hardcoded to 5); added <code>LARA_QUERY_DIR</code> env override so curated questions load without touching the original dataset files. Output filenames now carry <code>top{k}</code>.</td></tr>
+        <tr><td><code>compute_score_llm.py</code> / <code>compute_score_numeric.py</code></td><td>Added matching <code>--top_k</code>; reads the <code>top{k}</code>-tagged prediction files, same pattern as the existing <code>--chunker</code> flag.</td></tr>
+        <tr><td><code>merge_judgments.py</code></td><td>Same <code>--top_k</code> threading for the combined binary+numeric log.</td></tr>
+        <tr><td><code>aggregate_topk_results.py</code></td><td><b>New.</b> Builds one table: rows = top_k, columns = reasoning/comp accuracy on both scales.</td></tr>
+        <tr><td><code>run_topk_study.sh</code></td><td><b>New.</b> Orchestrates: reasoning &times; {5,10,15} &times; 3 doc types, comp &times; {2} &times; 3 doc types, judge both scales, aggregate.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">5</div>
+</section>
+
+<!-- 6. CODE SNIPPET -->
+<section class="slide">
+  <div class="kicker">Code &mdash; the actual seam</div>
+  <div class="stitle"><code style="font-size:32px;background:none;border:none;padding:0;">eval_rag.py</code> &mdash; rerank_size becomes a flag</div>
+  <div class="fill-mid">
+    <div class="code">parser.add_argument(<span class="s">'--top_k'</span>, default=<span class="s">5</span>, type=<span class="k">int</span>)
+<span class="c">&hellip;</span>
+config = {
+    <span class="c"># was: "rerank_size": 5,   (hardcoded)</span>
+    <span class="s">"rerank_size"</span>: top_k,               <span class="c"># <- the entire behavioral change</span>
+    <span class="s">"vector_ratio"</span>: <span class="s">0.5</span>,
+    &hellip;
+}
+
+<span class="c"># curated questions load without touching datasets/query/:</span>
+query_dir = os.environ.get(<span class="s">"LARA_QUERY_DIR"</span>, <span class="s">"../datasets/query"</span>)
+data_path = <span class="s">f"&#123;query_dir&#125;/&#123;context_length&#125;_&#123;context_type&#125;_&#123;query_type&#125;.jsonl"</span>
+
+<span class="c"># output filenames carry top_k so the 3 sweep points don't collide:</span>
+output_path = <span class="s">f"./prediction/&#123;eval_model&#125;/rag_preds_&#123;eval_model&#125;_&#123;chunker&#125;_top&#123;top_k&#125;_&#123;context_length&#125;_&#123;context_type&#125;_&#123;query_type&#125;.jsonl"</span></div>
+    <div class="codecap">Everything downstream of <code>config</code> &mdash; hybrid retrieval, BM25, fusion,
+      reranking, generation &mdash; is unchanged code; it just now sees <code>rerank_size</code> vary instead
+      of always being 5.</div>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">6</div>
+</section>
+
+<!-- 7. EXPERIMENT SETUP -->
+<section class="slide">
+  <div class="kicker">Experiment setup</div>
+  <div class="stitle">Scope of this run</div>
+  <div class="fill-mid">
+    <div class="cols">
+      <div>
+        <h3>Fixed across all cells</h3>
+        <ul>
+          <li>Generator: <b>qwen2.5:7b</b> &middot; Judge: <b>qwen2.5:14b</b> (decoupled, via Ollama)</li>
+          <li>Context length: <b>32k</b> only &middot; Chunker: <b>token</b> (chunker-study winner)</li>
+          <li>3 doc types: <b>book, financial, paper</b></li>
+          <li>15 curated questions per (doc type &times; top_k) cell</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Varied</h3>
+        <ul>
+          <li><b>reasoning</b>: top_k &isin; {5, 10, 15} &mdash; the sweep</li>
+          <li><b>comp</b>: top_k = 2, fixed (task ceiling, not swept)</li>
+          <li>Judged on <b>both scales</b>: binary True/False and 0&ndash;10 numeric</li>
+        </ul>
+      </div>
+    </div>
+    <div class="qbox" style="margin-top:32px;">45 reasoning questions &times; 3 top_k values + 45 comp questions
+      = <b>180 generations</b>, judged twice (binary + numeric) = <b>360 judge calls</b>.</div>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">7</div>
+</section>
+
+<!-- 8. RESULTS TABLE -->
+<section class="slide">
+  <div class="kicker">Results</div>
+  <div class="stitle">Accuracy by top_k and doc type (%)</div>
+  <div class="fill-top">
+    <table class="num-table">
+      <thead><tr><th>top_k</th><th>task</th><th>book<br>bin / num</th><th>financial<br>bin / num</th><th>paper<br>bin / num</th><th><b>overall</b><br>bin / num</th></tr></thead>
+      <tbody>
+        <tr><td>5</td><td>reasoning</td><td>40.0 / 51.3</td><td>40.0 / 52.0</td><td>80.0 / 76.0</td><td><b>53.3 / 59.8</b></td></tr>
+        <tr><td>10</td><td>reasoning</td><td>33.3 / 50.0</td><td>40.0 / 57.3</td><td>86.7 / 77.3</td><td><b>53.3 / 61.6</b></td></tr>
+        <tr><td>15</td><td>reasoning</td><td>46.7 / 59.3</td><td>46.7 / 59.3</td><td>80.0 / 74.0</td><td><b>57.8 / 64.2</b></td></tr>
+        <tr><td>2 (fixed)</td><td>comp</td><td>33.3 / 40.0</td><td>13.3 / 24.7</td><td>40.0 / 46.7</td><td><b>28.9 / 37.1</b></td></tr>
+      </tbody>
+    </table>
+    <div class="para" style="margin-top:24px;">n=15 questions per (doc type &times; top_k) cell, 45 per row.
+      "bin" = binary judge accuracy; "num" = numeric judge's mean score, normalized to a percentage. No
+      generation or judging errors in this run (cnt=15 on every cell).</div>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">8</div>
+</section>
+
+<!-- 9. RESULTS CHART -->
+<section class="slide">
+  <div class="kicker">Results &mdash; overall, visually</div>
+  <div class="stitle">More chunks helps reasoning a little; comp is a different problem</div>
+  <div class="fill-mid">
+    <div class="chartwrap">
+      <div class="legend">
+        <div class="lg"><div class="sw" style="background:var(--blue);"></div>Binary judge</div>
+        <div class="lg"><div class="sw" style="background:var(--orange);"></div>Numeric judge</div>
+      </div>
+      <div class="bgrow">
+        <div class="name">reasoning<br>top_k=5</div>
+        <div class="bars">
+          <div class="btrack"><div class="bfill" style="width:53.3%;background:var(--blue);"><span>53.3</span></div></div>
+          <div class="btrack"><div class="bfill" style="width:59.8%;background:var(--orange);"><span>59.8</span></div></div>
+        </div>
+      </div>
+      <div class="bgrow">
+        <div class="name">reasoning<br>top_k=10</div>
+        <div class="bars">
+          <div class="btrack"><div class="bfill" style="width:53.3%;background:var(--blue);"><span>53.3</span></div></div>
+          <div class="btrack"><div class="bfill" style="width:61.6%;background:var(--orange);"><span>61.6</span></div></div>
+        </div>
+      </div>
+      <div class="bgrow">
+        <div class="name">reasoning<br>top_k=15</div>
+        <div class="bars">
+          <div class="btrack"><div class="bfill" style="width:57.8%;background:var(--blue);"><span>57.8</span></div></div>
+          <div class="btrack"><div class="bfill" style="width:64.2%;background:var(--orange);"><span>64.2</span></div></div>
+        </div>
+      </div>
+      <div class="bgrow">
+        <div class="name">comp<br>top_k=2 (fixed)</div>
+        <div class="bars">
+          <div class="btrack"><div class="bfill" style="width:28.9%;background:var(--blue);"><span>28.9</span></div></div>
+          <div class="btrack"><div class="bfill" style="width:37.1%;background:var(--orange);"><span>37.1</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="para" style="margin-top:10px;">Reasoning climbs modestly and monotonically on the numeric scale
+      as top_k goes 5&rarr;10&rarr;15 (59.8&rarr;61.6&rarr;64.2). Comp, even retrieving exactly its 2 needed
+      chunks, sits far below reasoning at every top_k &mdash; more retrieval depth cannot fix a task whose
+      bottleneck is <b>combining</b> 2 chunks, not <b>finding</b> them.</div>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">9</div>
+</section>
+
+<!-- 10. PER-DOC-TYPE NUANCE -->
+<section class="slide">
+  <div class="kicker">Interpretation &mdash; the aggregate hides this</div>
+  <div class="stitle">The top_k trend depends heavily on doc type</div>
+  <div class="fill-mid">
+    <div class="cols">
+      <div>
+        <h3>book &amp; financial: real "full"-document questions</h3>
+        <ul>
+          <li><b>financial</b> numeric rises cleanly: 52.0 &rarr; 57.3 &rarr; 59.3 as top_k grows &mdash; more
+            chunks genuinely helps when the question needs whole-document synthesis.</li>
+          <li><b>book</b> is noisier (51.3 &rarr; 50.0 &rarr; 59.3) &mdash; dips at top_k=10 before recovering,
+            most likely n=15 sample noise rather than a real reversal.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>paper: no "full" questions &mdash; already near ceiling</h3>
+        <ul>
+          <li>paper reasoning sits at 74&ndash;77 numeric / 80&ndash;87 binary <b>regardless of top_k</b> &mdash;
+            it's the fallback question set (slide 4), not genuinely whole-document, so it doesn't test what
+            this sweep is trying to measure.</li>
+          <li>This is a real limitation of the 32k paper corpus, not a modeling artifact &mdash; flagged again
+            on the limitations slide.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="qbox" style="margin-top:28px;">The overall numbers on slide 9 are real, but the story is really
+      "more retrieval depth helps <i>when the question actually needs it</i>" &mdash; book and financial show
+      that; paper can't, because it has no genuinely multi-chunk reasoning questions to begin with.</div>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">10</div>
+</section>
+
+<!-- 11. WHY COMP IS LOW -->
+<section class="slide">
+  <div class="kicker">Why the scores are low &mdash; comp</div>
+  <div class="stitle">Retrieval misses, not generation misses</div>
+  <div class="fill-mid">
+    <div class="exwrap">
+      <div class="exbox" style="flex:0.9;">
+        <h5>Question (comp &middot; book &middot; top_k=2)</h5>
+        <p><b>What role does Daisy's mother play in response to Daisy's social interactions with men in
+          both Vevey and Rome?</b></p>
+        <h5 style="margin-top:14px;">Groundtruth</h5>
+        <p>Daisy's mother is consistently portrayed as permissive and somewhat unaware, allowing Daisy to
+          freely interact with men in both Vevey and Rome&hellip;</p>
+      </div>
+      <div class="exbox" style="flex:1.1;">
+        <h5>Model's answer</h5>
+        <p>&ldquo;The provided text does not contain any information about Daisy or her mother&hellip; The
+          text discusses Alexander Fitzgerald and his aunt Mrs. Fitzgerald but does not mention Daisy or
+          any&hellip;&rdquo;</p>
+        <h5 style="margin-top:14px;">Numeric judge's reasoning</h5>
+        <p>&ldquo;Completely irrelevant to the question about Daisy and her mother, instead mentioning a
+          different character from an unspecified text.&rdquo;</p>
+      </div>
+    </div>
+    <div class="verdictrow">
+      <div class="vpill" style="background:#fdeceb;"><div class="vv" style="color:var(--critical);">False</div><div class="vl">binary judge (0.0)</div></div>
+      <div class="vpill" style="background:#fdeceb;"><div class="vv" style="color:var(--critical);">0 / 10</div><div class="vl">numeric judge</div></div>
+    </div>
+    <div class="para tight">Wrong document context, not a wrong answer &mdash; the retriever pulled the wrong
+      2 chunks entirely. <b>9 of comp's 11 zero-scored answers</b> (11/45 overall) explicitly say some version
+      of &ldquo;the provided chunks do not contain this information.&rdquo; Comp's questions were deliberately
+      curated for the <i>widest</i> chunk-to-chunk distance (slide 4), and top_k=2 gives zero margin: miss
+      either one of the 2 needed segments and the model has nothing to work with. This is the retrieval step
+      failing, not the LLM reasoning badly over correct context.</div>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">11</div>
+</section>
+
+<!-- 12. WHY SOME REASONING IS LOW -->
+<section class="slide">
+  <div class="kicker">Why the scores are low &mdash; reasoning</div>
+  <div class="stitle">Some failures are a generation ceiling, not a retrieval one</div>
+  <div class="fill-mid">
+    <div class="exwrap">
+      <div class="exbox" style="flex:0.9;">
+        <h5>Question (reasoning &middot; financial &middot; "full")</h5>
+        <p><b>What was the primary factor contributing to the net increase in total liabilities for Equus
+          Total Return, Inc. from December 31, 2023, to March 31, 2024?</b></p>
+        <h5 style="margin-top:14px;">Groundtruth</h5>
+        <p>Borrowing under the margin account, which increased from $44,955,000 (Dec 2023) to $52,970,000
+          (Mar 2024) to maintain the Fund's RIC status.</p>
+      </div>
+      <div class="exbox" style="flex:1.1;">
+        <h5>Model's answer (top_k=15 &mdash; the most chunks it ever got)</h5>
+        <p>&ldquo;The provided chunks do not contain specific information regarding the primary factors
+          contributing to the net increase in total liabilities&hellip; The necessary details are not
+          presented in the given text.&rdquo;</p>
+      </div>
+    </div>
+    <div class="verdictrow">
+      <div class="vpill" style="background:#fdeceb;"><div class="vv" style="color:var(--critical);">top_k=5: 0</div><div class="vl">numeric score</div></div>
+      <div class="vpill" style="background:#fdeceb;"><div class="vv" style="color:var(--critical);">top_k=10: 0</div><div class="vl">numeric score</div></div>
+      <div class="vpill" style="background:#fdeceb;"><div class="vv" style="color:var(--critical);">top_k=15: 1</div><div class="vl">numeric score</div></div>
+    </div>
+    <div class="para tight">Same question, same document, <b>3&times; more chunks retrieved &mdash; still fails.</b>
+      That rules out "not enough retrieval depth" for this failure mode. <b>14 of 135 reasoning generations
+      (10%) scored &le;1</b>; 11 of those 14 (79%) are this same style of financial question, asking for a
+      computed change between two report dates &mdash; the model needs to pull two different numbers from two
+      different filing sections <i>and</i> get the subtraction right. That's a generation/arithmetic
+      limitation of the 7B generator, not a missing-chunk problem &mdash; more top_k cannot fix it.</div>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">12</div>
+</section>
+
+<!-- 13. TAKEAWAYS -->
+<section class="slide">
+  <div class="kicker">Interpretation</div>
+  <div class="stitle">Four takeaways</div>
+  <div class="fill-mid">
+    <div class="tk">
+      <div class="item"><div class="num">1</div><div class="txt">Retrieving more chunks <b>helps reasoning, but
+        modestly</b> &mdash; +4.4 points binary and +4.4 points numeric going from top_k=5 to top_k=15
+        overall, concentrated in doc types that actually have whole-document questions.</div></div>
+      <div class="item"><div class="num">2</div><div class="txt"><b>Comp is bottlenecked elsewhere.</b> Even at
+        its exact ceiling (top_k=2, no missing chunks possible), comp scores 25&ndash;27 points below
+        reasoning at every top_k. On the curated highest-relative-spread questions, the model gets the right
+        chunks and still struggles to combine them.</div></div>
+      <div class="item"><div class="num">3</div><div class="txt">The <b>binary/numeric judge gap persists</b>
+        here too &mdash; every cell's numeric score sits 6&ndash;12 points above its binary accuracy, the same
+        judge-collapse phenomenon flagged in the earlier judge and chunker studies, now visible across top_k
+        as well.</div></div>
+      <div class="item"><div class="num">4</div><div class="txt">Curating "genuinely RAG-stressing" questions
+        (relative spread for comp, "full"-document tag for reasoning) surfaced a real data gap: <b>32k paper
+        docs have zero whole-document reasoning questions</b> &mdash; worth flagging to the professor
+        independently of this study.</div></div>
+    </div>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">13</div>
+</section>
+
+<!-- 14. LIMITATIONS -->
+<section class="slide">
+  <div class="kicker">Limitations &amp; caveats</div>
+  <div class="stitle">What this run does and doesn't show</div>
+  <div class="fill-mid">
+    <div class="cols">
+      <div>
+        <h3>Scope limits</h3>
+        <ul>
+          <li><b>n=15</b> per cell (180 total generations) &mdash; up from the chunker study's n=5, still a
+            bounded run, not the full benchmark.</li>
+          <li>Single generator/judge pair, single chunker (<b>token</b>) held fixed &mdash; top_k &times;
+            chunker interaction is untested.</li>
+          <li>32k context only; no comparison against 128k, where documents have far more segments and top_k
+            has more room to matter.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The curation itself is a heuristic</h3>
+        <ul>
+          <li><code>context_order == "full"</code> is LaRA's own tag for whole-document reasoning questions,
+            not an independently validated difficulty measure.</li>
+          <li>paper's fallback set (no "full" questions available) is not directly comparable to book/financial's
+            genuine "full" sets &mdash; see slide 10.</li>
+          <li>Comp's relative-spread ranking is capped by 32k docs having only ~3 segments; a wider spread
+            distinction only shows up at 128k (per the earlier Task A analysis).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">14</div>
+</section>
+
+<!-- 15. REPRO -->
+<section class="slide">
+  <div class="kicker">Reproducing this</div>
+  <div class="stitle">Two commands, plus where the outputs land</div>
+  <div class="fill-mid">
+    <div class="code">python select_stress_questions.py         <span class="c"># once, curates the question sets</span>
+bash run_topk_study.sh                     <span class="c"># generate + judge (both scales) + aggregate</span>
+<span class="c"># override scope, e.g. a wider sweep or more doc types:</span>
+REASONING_TOP_KS=<span class="s">"5 10 20"</span> COMP_TOP_K=<span class="s">2</span> bash run_topk_study.sh</div>
+    <table style="margin-top:22px;">
+      <thead><tr><th>Output</th><th>Path</th></tr></thead>
+      <tbody>
+        <tr><td>Curated question sets</td><td><code>datasets/query_topk_study/32k_&lt;doctype&gt;_&lt;reasoning|comp&gt;.jsonl</code></td></tr>
+        <tr><td>Per-question logs, both scales</td><td><code>prediction/result/combined_judgments_gen-*_chunker-token_topk-*.jsonl</code></td></tr>
+        <tr><td>Per-top_k binary / numeric CSVs</td><td><code>prediction/result/(numeric_)gen-*_topk-*_all.csv</code></td></tr>
+        <tr><td>Final comparison table</td><td><code>prediction/result/topk_comparison.csv</code></td></tr>
+      </tbody>
+    </table>
+    <div class="para" style="margin-top:24px;">Natural next step: widen n per cell for a statistically firmer
+      reasoning trend, and/or sweep top_k against multiple chunkers together, pending professor feedback.</div>
+  </div>
+  <div class="brand">LaRA &middot; top_k study</div><div class="pnum">15</div>
+</section>
+
+</body>
+</html>

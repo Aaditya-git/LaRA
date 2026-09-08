@@ -23,6 +23,8 @@ parser.add_argument('--context_length', type=str, help='the length of the contex
 parser.add_argument('--eval_model', type=str, help='model')
 parser.add_argument('--chunker', default='sentence', choices=chunkers.STRATEGIES,
                      help='Chonkie chunking strategy for the RAG path (default: sentence)')
+parser.add_argument('--top_k', default=5, type=int,
+                     help='number of chunks retrieved after rerank (SimpleHybridSearcher rerank_size); default 5')
 
 args = parser.parse_args()
 eval_model = args.eval_model
@@ -30,6 +32,7 @@ query_type = args.query_type
 context_type = args.context_type
 context_length = args.context_length
 chunker = args.chunker
+top_k = args.top_k
 
 api_key = ""
 org_id = ""
@@ -100,7 +103,7 @@ def process_example(eg):
         "class_file": "simpleHybridSearcher",
         "remove_if_exists": False,
         "thread_num": 1,
-        "rerank_size": 5,
+        "rerank_size": top_k,
         "vector_ratio": 0.5,
         "embed_model_name": EMBED_MODEL,
         "rerank_model": RERANK_MODEL
@@ -134,11 +137,12 @@ def process_example(eg):
 
 if __name__ == "__main__":    
 
-    data_path = f'../datasets/query/{context_length}_{context_type}_{query_type}.jsonl'
+    query_dir = os.environ.get("LARA_QUERY_DIR", "../datasets/query")
+    data_path = f'{query_dir}/{context_length}_{context_type}_{query_type}.jsonl'
     examples = load_data(data_path)
     if os.environ.get("LARA_LIMIT"):
         examples = examples[:int(os.environ["LARA_LIMIT"])]
-    output_path = f'./prediction/{eval_model}/rag_preds_{eval_model}_{chunker}_{context_length}_{context_type}_{query_type}.jsonl'
+    output_path = f'./prediction/{eval_model}/rag_preds_{eval_model}_{chunker}_top{top_k}_{context_length}_{context_type}_{query_type}.jsonl'
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     tokenizer = tiktoken.encoding_for_model("gpt-4")

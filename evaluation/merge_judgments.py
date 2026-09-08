@@ -20,14 +20,16 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--eval_model', required=True, type=str)
 parser.add_argument('--judge_model', default=None, type=str)
 parser.add_argument('--chunker', default=None, type=str)
+parser.add_argument('--top_k', default=None, type=int)
 args = parser.parse_args()
 
 eval_model = args.eval_model
 judge_model = args.judge_model or eval_model
 chunker = args.chunker
+top_k = args.top_k
 _safe_eval = eval_model.replace(':', '-').replace('/', '-')
 _safe_judge = judge_model.replace(':', '-').replace('/', '-')
-CELL = f'gen-{_safe_eval}_judge-{_safe_judge}' + (f'_chunker-{chunker}' if chunker else '')
+CELL = f'gen-{_safe_eval}_judge-{_safe_judge}' + (f'_chunker-{chunker}' if chunker else '') + (f'_topk-{top_k}' if top_k else '')
 
 BINARY_LOG = f'./prediction/result/judge_debug_{CELL}.jsonl'
 NUMERIC_LOG = f'./prediction/result/numeric_judge_debug_{CELL}.jsonl'

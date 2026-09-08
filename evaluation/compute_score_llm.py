@@ -23,17 +23,21 @@ parser.add_argument('--chunker', default=None, type=str,
                      help='Chonkie chunking strategy the RAG predictions were generated with '
                           '(token/sentence/recursive/semantic/fast). Only applies to rag_preds_*; '
                           'when set, full-context predictions are skipped since chunking does not apply there.')
+parser.add_argument('--top_k', default=None, type=int,
+                     help='number of chunks retrieved (rerank_size) the RAG predictions were generated with; '
+                          'must match the --top_k passed to eval_rag.py for the same run.')
 
 args = parser.parse_args()
 
 eval_model = args.eval_model
 judge_model = args.judge_model or eval_model
 chunker = args.chunker
+top_k = args.top_k
 
-# distinct result-file tag per (generator, judge[, chunker]) cell so runs don't overwrite each other
+# distinct result-file tag per (generator, judge[, chunker][, top_k]) cell so runs don't overwrite each other
 _safe_eval = eval_model.replace(':', '-').replace('/', '-')
 _safe_judge = judge_model.replace(':', '-').replace('/', '-')
-CELL = f'gen-{_safe_eval}_judge-{_safe_judge}' + (f'_chunker-{chunker}' if chunker else '')
+CELL = f'gen-{_safe_eval}_judge-{_safe_judge}' + (f'_chunker-{chunker}' if chunker else '') + (f'_topk-{top_k}' if top_k else '')
 
 import threading
 
@@ -189,16 +193,17 @@ length_list = ['32k', '128k']
 save_all_path = f'./prediction/result/{CELL}_all.jsonl'
 save_order_path = f'./prediction/result/{CELL}_order.jsonl'
 
-# chunking only applies to the RAG path; when --chunker is set, skip full-context entirely
-rag_or_full_list = ['rag'] if chunker else ['rag', 'full']
+# chunking/top_k only apply to the RAG path; when either is set, skip full-context entirely
+rag_or_full_list = ['rag'] if (chunker or top_k) else ['rag', 'full']
 
 for rag_or_full in rag_or_full_list:
     for context_length in length_list:
         for query_type in query_type_list:
             for context_type in context_type_list:
                 chunker_tag = f'{chunker}_' if (chunker and rag_or_full == 'rag') else ''
-                check = f'{rag_or_full}_{eval_model}_{chunker_tag}{context_length}_{context_type}_{query_type}'
-                data_path = f'./prediction/{eval_model}/{rag_or_full}_preds_{eval_model}_{chunker_tag}{context_length}_{context_type}_{query_type}.jsonl'
+                topk_tag = f'top{top_k}_' if (top_k and rag_or_full == 'rag') else ''
+                check = f'{rag_or_full}_{eval_model}_{chunker_tag}{topk_tag}{context_length}_{context_type}_{query_type}'
+                data_path = f'./prediction/{eval_model}/{rag_or_full}_preds_{eval_model}_{chunker_tag}{topk_tag}{context_length}_{context_type}_{query_type}.jsonl'
                 if not os.path.exists(data_path):
                     continue  # no predictions generated for this config; skip silently
                 print("\n============================================================")
